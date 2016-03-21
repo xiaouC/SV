@@ -1,0 +1,9 @@
+*.o
+*.swp
+.sconsign.dblite
+main
+src/pbc/libpbc.a
+Debug.win32
+Release.win32
+StardewValley.opensdf
+ipch
