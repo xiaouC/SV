@@ -67,6 +67,9 @@ void CChildView::OnSize(UINT nType, int cx, int cy)
 	{
 		pGLView->setFrameSize( cx, cy );
 
+		cocos2d::CCSize kWinSizeInPoints = pGLView->getDesignResolutionSize();
+        pGLView->setViewPortInPoints(0, 0, kWinSizeInPoints.width, kWinSizeInPoints.height);
+
 		cocos2d::CCNode* pMainNode = ((CMainFrame*)AfxGetMainWnd())->getMainNode();
 		pMainNode->setPosition( cx * 0.5f, cy * 0.5f );
 	}

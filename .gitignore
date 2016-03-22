@@ -3,7 +3,9 @@
 .sconsign.dblite
 main
 src/pbc/libpbc.a
+Release
 Debug.win32
 Release.win32
 StardewValley.opensdf
+StardewValley/Release/
 ipch
