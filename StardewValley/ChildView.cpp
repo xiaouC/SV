@@ -29,6 +29,7 @@ CChildView::~CChildView()
 BEGIN_MESSAGE_MAP(CChildView, CWnd)
 	ON_WM_PAINT()
 	ON_WM_SIZE()
+	ON_WM_LBUTTONUP()
 END_MESSAGE_MAP()
 
 
@@ -65,6 +66,8 @@ void CChildView::OnSize(UINT nType, int cx, int cy)
 	cocos2d::CCEGLView* pGLView = cocos2d::CCDirector::sharedDirector()->getOpenGLView( "MainView" );
 	if( pGLView != NULL )
 	{
+		pGLView->beginRender();
+
 		pGLView->setFrameSize( cx, cy );
 
 		cocos2d::CCSize kWinSizeInPoints = pGLView->getDesignResolutionSize();
@@ -73,4 +76,12 @@ void CChildView::OnSize(UINT nType, int cx, int cy)
 		cocos2d::CCNode* pMainNode = ((CMainFrame*)AfxGetMainWnd())->getMainNode();
 		pMainNode->setPosition( cx * 0.5f, cy * 0.5f );
 	}
+}
+
+
+void CChildView::OnLButtonUp(UINT nFlags, CPoint point)
+{
+	// TODO: 在此添加消息处理程序代码和/或调用默认值
+
+	CWnd::OnLButtonUp(nFlags, point);
 }

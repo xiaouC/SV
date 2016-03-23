@@ -3,6 +3,7 @@
 .sconsign.dblite
 main
 src/pbc/libpbc.a
+Debug
 Release
 Debug.win32
 Release.win32

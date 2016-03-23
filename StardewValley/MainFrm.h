@@ -6,6 +6,7 @@
 #include "ChildView.h"
 #include "FileView.h"
 #include "ClassView.h"
+#include "MapStyleWnd.h"
 #include "OutputWnd.h"
 #include "PropertiesWnd.h"
 
@@ -47,13 +48,16 @@ public:
 	virtual void Dump(CDumpContext& dc) const;
 #endif
 
+	CMapStyleWnd* getMapStyleWnd() { return &m_wndMapStyle; }
+
 protected:  // 控件条嵌入成员
 	CMFCMenuBar       m_wndMenuBar;
 	CMFCToolBar       m_wndToolBar;
 	CMFCStatusBar     m_wndStatusBar;
 	CMFCToolBarImages m_UserImages;
 	CFileView         m_wndFileView;
-	CClassView        m_wndClassView;
+	//CClassView        m_wndClassView;
+	CMapStyleWnd      m_wndMapStyle;
 	COutputWnd        m_wndOutput;
 	CPropertiesWnd    m_wndProperties;
 	CChildView    m_wndView;
