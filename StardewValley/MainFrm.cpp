@@ -6,9 +6,6 @@
 #include "StardewValley.h"
 
 #include "MainFrm.h"
-#include "CCDirector.h"
-#include "CCEGLView.h"
-#include "MC/MCLoader.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -186,21 +183,6 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	CRect rect;
 	m_wndView.GetWindowRect( &rect );
 
-	m_pAppDelegate = new AppDelegate;
-	if( StartLua( CCLuaEngine::defaultEngine(), "main" ) != 0 )
-	{
-        CCLog( "error start lua main.lua" );
-    }
-
-	cocos2d::CCEGLView* pGLView = cocos2d::CCEGLView::create( (int)m_wndView.m_hWnd );
-	pGLView->setFrameSize( rect.Width(), rect.Height() );
-	m_pMainNode = cocos2d::CCNode::create();
-	cocos2d::CCDirector::sharedDirector()->addOpenGLView( "MainView", pGLView, m_pMainNode );
-
-	m_pMainNode->setPosition( rect.Width() * 0.5f, rect.Height() * 0.5f );
-
-
-	m_pMainNode->addChild( MCLoader::sharedMCLoader()->loadSprite( "mc/mapStyle_1.png" ) );
 
 	m_wndMapStyle.initMapDetailWndList();
 

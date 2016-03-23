@@ -23,6 +23,7 @@ public:
 
 protected:
 	CBrush m_bgBrush;
+	CPen m_kPen;
 
 	struct ImageInfo {
 		CImage* pImage;
@@ -32,6 +33,7 @@ protected:
 		int nOffsetY;
 	};
 	std::map<std::string,ImageInfo> m_mapImages;
+	std::string m_strCurrentName;
 
 protected:
 	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
@@ -44,6 +46,7 @@ public:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnPaint();
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 };
 
 class CMapStyleWnd : public CDockablePane

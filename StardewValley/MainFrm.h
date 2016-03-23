@@ -10,9 +10,6 @@
 #include "OutputWnd.h"
 #include "PropertiesWnd.h"
 
-#include "AppDelegate.h"
-#include "base_nodes\CCNode.h"
-
 class CMainFrame : public CFrameWndEx
 {
 	
@@ -20,13 +17,6 @@ public:
 	CMainFrame();
 protected: 
 	DECLARE_DYNAMIC(CMainFrame)
-
-public:
-	cocos2d::CCNode* getMainNode() const { return m_pMainNode; }
-
-protected:
-	AppDelegate* m_pAppDelegate;
-	cocos2d::CCNode* m_pMainNode;
 
 // 特性
 public:
@@ -47,8 +37,6 @@ public:
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;
 #endif
-
-	CMapStyleWnd* getMapStyleWnd() { return &m_wndMapStyle; }
 
 protected:  // 控件条嵌入成员
 	CMFCMenuBar       m_wndMenuBar;

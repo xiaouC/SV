@@ -4,8 +4,6 @@
 #include "OutputWnd.h"
 #include "Resource.h"
 #include "MainFrm.h"
-
-#include "MC/MCLoader.h"
 #include "MapStyleWnd.h"
 
 #ifdef _DEBUG
@@ -57,10 +55,7 @@ void CMapStyleWnd::initMapDetailWndList()
 
 	int nMapDetailWndID = 1;
 	int nMapDetailIndex = 0;
-	const DWORD dwStyle = WS_CHILD | WS_VISIBLE ;
-
-	std::map< std::string, std::list<std::string> > mapStyleTexFileNames;
-	MCLoader::sharedMCLoader()->getStyleTextureFileNameList( "mapStyle", mapStyleTexFileNames );
+	const DWORD dwStyle = WS_CHILD | WS_VISIBLE | SS_NOTIFY ;
 
 	int nStyleNum = ::GetPrivateProfileInt( _T("mapStyle"), _T("styleNum"), 0, _T("./Editor/EditorConfig.ini") );
 	for( int i=1; i <= nStyleNum; ++i )
@@ -108,7 +103,7 @@ void CMapStyleWnd::OnSize(UINT nType, int cx, int cy)
 	// 选项卡控件应覆盖整个工作区:
 	m_wndTabs.SetWindowPos (NULL, -1, -1, cx, cy, SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOZORDER);
 
-	Invalidate();
+	
 }
 
 void CMapStyleWnd::AdjustHorzScroll(CListBox& wndListBox)
@@ -150,6 +145,7 @@ BEGIN_MESSAGE_MAP(CMapDetail, CStatic)
 	ON_WM_SIZE()
 	ON_WM_PAINT()
 	ON_WM_CREATE()
+	ON_WM_LBUTTONUP()
 END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // COutputList 消息处理程序
@@ -237,34 +233,36 @@ void CMapDetail::initMapDetail( const CString& strPrev, int nNum )
 	adjustLayout();
 }
 
+const int nInterval = 5;
 void CMapDetail::adjustLayout()
 {
 	CRect rect;
 	GetWindowRect( &rect );
 
-	float nOffsetX = 0;
-	float nOffsetY = 0;
+	float nOffsetX = nInterval;
+	float nOffsetY = nInterval;
 	float nCurLineMaxHeight = 0;
 
 	std::map<std::string,ImageInfo>::iterator iter = m_mapImages.begin();
 	std::map<std::string,ImageInfo>::iterator iter_end = m_mapImages.end();
 	for( ; iter != iter_end; ++iter )
 	{
-		if( nOffsetX + iter->second.nWidth > rect.Width() )
+		if( nOffsetX + iter->second.nWidth + nInterval > rect.Width() )
 		{
-			nOffsetX = 0;
-			nOffsetY = nOffsetY + nCurLineMaxHeight;
+			nOffsetX = nInterval;
+			nOffsetY = nOffsetY + nCurLineMaxHeight + nInterval * 2;
+			nCurLineMaxHeight = 0;
 		}
 
 		iter->second.nOffsetX = nOffsetX;
 		iter->second.nOffsetY = nOffsetY;
 
-		nOffsetX = nOffsetX + iter->second.nWidth;
+		nOffsetX = nOffsetX + iter->second.nWidth + nInterval * 2;
 		if( iter->second.nHeight > nCurLineMaxHeight )
 			nCurLineMaxHeight = iter->second.nHeight;
 	}
 
-	InvalidateRect( &rect,TRUE );
+	Invalidate();
 }
 
 void CMapDetail::OnSize(UINT nType, int cx, int cy)
@@ -286,12 +284,40 @@ void CMapDetail::OnPaint()
 
 	dc.FillRect( &rect,&m_bgBrush );
 
+	CPen bluePen( PS_SOLID, 2, RGB( 0, 0, 255 ) );    //定义画笔
+	CPen* pOldPen = dc.SelectObject( &bluePen );
+
+	int nHalfInterval = nInterval / 2;
 	std::map<std::string,ImageInfo>::iterator iter = m_mapImages.begin();
 	std::map<std::string,ImageInfo>::iterator iter_end = m_mapImages.end();
 	for( ; iter != iter_end; ++iter )
 	{
 		iter->second.pImage->Draw( dc, iter->second.nOffsetX, iter->second.nOffsetY );
+
+		if( m_strCurrentName.compare( iter->first ) != 0 )
+		{
+			dc.MoveTo( iter->second.nOffsetX - nHalfInterval, iter->second.nOffsetY - nHalfInterval );
+			dc.LineTo( iter->second.nOffsetX - nHalfInterval, iter->second.nOffsetY + iter->second.nHeight + nHalfInterval );
+			dc.LineTo( iter->second.nOffsetX + iter->second.nWidth + nHalfInterval, iter->second.nOffsetY + iter->second.nHeight + nHalfInterval );
+			dc.LineTo( iter->second.nOffsetX + iter->second.nWidth + nHalfInterval, iter->second.nOffsetY - nHalfInterval );
+			dc.LineTo( iter->second.nOffsetX - nHalfInterval, iter->second.nOffsetY - nHalfInterval );
+		}
 	}
+
+	iter = m_mapImages.find( m_strCurrentName );
+	if( iter != iter_end )
+	{
+		CPen redPen( PS_SOLID, 2, RGB( 255, 0, 0 ) );    //定义画笔
+		dc.SelectObject( &redPen );
+
+		dc.MoveTo( iter->second.nOffsetX - nHalfInterval, iter->second.nOffsetY - nHalfInterval );
+		dc.LineTo( iter->second.nOffsetX - nHalfInterval, iter->second.nOffsetY + iter->second.nHeight + nHalfInterval );
+		dc.LineTo( iter->second.nOffsetX + iter->second.nWidth + nHalfInterval, iter->second.nOffsetY + iter->second.nHeight + nHalfInterval );
+		dc.LineTo( iter->second.nOffsetX + iter->second.nWidth + nHalfInterval, iter->second.nOffsetY - nHalfInterval );
+		dc.LineTo( iter->second.nOffsetX - nHalfInterval, iter->second.nOffsetY - nHalfInterval );
+	}
+
+	dc.SelectObject( pOldPen );
 }
 
 void CMapStyleWnd::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
@@ -306,8 +332,29 @@ void CMapStyleWnd::OnLButtonUp(UINT nFlags, CPoint point)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
 
+
 	CDockablePane::OnLButtonUp(nFlags, point);
 }
 
+void CMapDetail::OnLButtonUp(UINT nFlags, CPoint point)
+{
+	// TODO: 在此添加消息处理程序代码和/或调用默认值
+	std::map<std::string,ImageInfo>::iterator iter = m_mapImages.begin();
+	std::map<std::string,ImageInfo>::iterator iter_end = m_mapImages.end();
+	for( ; iter != iter_end; ++iter )
+	{
+		if( iter->second.nOffsetX <= point.x &&
+			iter->second.nOffsetX + iter->second.nWidth >= point.x &&
+			iter->second.nOffsetY <= point.y &&
+			iter->second.nOffsetY + iter->second.nHeight >= point.y )
+		{
+			m_strCurrentName = iter->first;
 
+			Invalidate();
 
+			break;
+		}
+	}
+
+	CStatic::OnLButtonUp(nFlags, point);
+}
