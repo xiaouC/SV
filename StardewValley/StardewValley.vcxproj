@@ -52,6 +52,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\..\MCC\cocos2dx\;..\..\MCC\cocos2dx\support;..\..\MCC\cocos2dx\include;..\..\MCC\cocos2dx\platform;..\..\MCC\cocos2dx\platform\win32;..\..\MCC\cocos2dx\platform\third_party\win32;..\..\MCC\cocos2dx\platform\third_party\win32\pthread;..\..\MCC\cocos2dx\platform\third_party\win32\OGLES;..\..\MCC\cocos2dx\kazmath\include;..\..\MCC\CocosDenshion\include;..\..\MCC\scripting\lua\cocos2dx_support;..\..\MCC\scripting\lua\lua;..\..\MCC\scripting\lua\tolua;..\..\MCC\external\chipmunk\include\;..\..\YYFramework\src;..\..\protobuf-2.4.1\src;..\..\YYFramework\src\protocol\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/wd4819 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

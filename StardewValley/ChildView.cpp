@@ -14,9 +14,29 @@
 #define new DEBUG_NEW
 #endif
 
+// CMyDropTarget
+DROPEFFECT CMyDropTarget::OnDragEnter( CWnd* pWnd, COleDataObject* pDO, DWORD dwKeyState, CPoint pt )
+{
+	if( m_pChildView->addSpriteByDrop( pDO, pt, TRUE ) )
+		return m_dropAsEntered = DROPEFFECT_COPY | DROPEFFECT_MOVE;
+	else
+		return m_dropAsEntered = DROPEFFECT_NONE;
+}
+
+DROPEFFECT CMyDropTarget::OnDragOver( CWnd* pWnd, COleDataObject* pDO, DWORD dwKeyState, CPoint pt )
+{
+	return m_dropAsEntered;
+}
+
+DROPEFFECT CMyDropTarget::OnDropEx( CWnd* pWnd, COleDataObject* pDO, DROPEFFECT dropDefault, DROPEFFECT dropList, CPoint pt )
+{
+	if( m_pChildView->addSpriteByDrop( pDO, pt, FALSE ) )
+		return DROPEFFECT_COPY | DROPEFFECT_MOVE;
+
+	return DROPEFFECT_NONE;
+}
 
 // CChildView
-
 CChildView::CChildView()
 {
 	m_pAppDelegate = NULL;
@@ -94,6 +114,9 @@ int CChildView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;
 
 	// TODO:  在此添加您专用的创建代码
+	m_kOleTarget.m_pChildView = this;
+	m_kOleTarget.Register( this );
+
 	m_pAppDelegate = new AppDelegate;
 	if( StartLua( CCLuaEngine::defaultEngine(), "main" ) != 0 )
 	{
@@ -123,4 +146,37 @@ void CChildView::OnDestroy()
 	m_pAppDelegate = NULL;
 	m_pGLView = NULL;
 	m_pMainNode = NULL;
+}
+
+BOOL CChildView::addSpriteByDrop( COleDataObject* pDataObject, CPoint pt, BOOL bTestOnly )
+{
+	if( pDataObject->IsDataAvailable( CF_TEXT ) )
+	{
+		HGLOBAL hg = pDataObject->GetGlobalData( CF_TEXT );
+		LPVOID lpv = GlobalLock( hg );
+		std::string strData = (LPCSTR)lpv;
+		GlobalUnlock(hg);
+		GlobalFree(hg);
+
+		if( strData.find( "FlyFly" ) != std::string::npos )
+		{
+			if( !bTestOnly )
+			{
+				CRect rect;
+				GetWindowRect( &rect );
+
+				float x = pt.x - rect.Width() * 0.5f;
+				float y = rect.Height() * 0.5f - pt.y;
+
+				strData.erase( 0, 6 );
+				CCSprite* pSprite = MCLoader::sharedMCLoader()->loadSprite( strData.c_str() );
+				pSprite->setPosition( CCPoint( x, y ) );
+				m_pMainNode->addChild( pSprite );
+			}
+
+			return TRUE;
+		}
+	}
+
+	return FALSE;
 }

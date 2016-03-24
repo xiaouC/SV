@@ -72,6 +72,8 @@ BOOL CStardewValleyApp::InitInstance()
 	// 使用 RichEdit 控件需要  AfxInitRichEdit2()	
 	// AfxInitRichEdit2();
 
+	AfxOleInit();
+
 	// 标准初始化
 	// 如果未使用这些功能并希望减小
 	// 最终可执行文件的大小，则应移除下列

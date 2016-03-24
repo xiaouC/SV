@@ -146,6 +146,7 @@ BEGIN_MESSAGE_MAP(CMapDetail, CStatic)
 	ON_WM_PAINT()
 	ON_WM_CREATE()
 	ON_WM_LBUTTONUP()
+	ON_WM_LBUTTONDOWN()
 END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // COutputList 消息处理程序
@@ -339,6 +340,17 @@ void CMapStyleWnd::OnLButtonUp(UINT nFlags, CPoint point)
 void CMapDetail::OnLButtonUp(UINT nFlags, CPoint point)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
+	
+
+	CStatic::OnLButtonUp(nFlags, point);
+}
+
+
+void CMapDetail::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	// TODO: 在此添加消息处理程序代码和/或调用默认值
+	m_strCurrentName.clear();
+
 	std::map<std::string,ImageInfo>::iterator iter = m_mapImages.begin();
 	std::map<std::string,ImageInfo>::iterator iter_end = m_mapImages.end();
 	for( ; iter != iter_end; ++iter )
@@ -356,5 +368,11 @@ void CMapDetail::OnLButtonUp(UINT nFlags, CPoint point)
 		}
 	}
 
-	CStatic::OnLButtonUp(nFlags, point);
+	if( !m_strCurrentName.empty() )
+	{
+		CMyDataSource ds( "FlyFly" + m_strCurrentName );
+		ds.DoDragDrop( DROPEFFECT_COPY );
+	}
+
+	CStatic::OnLButtonDown(nFlags, point);
 }
