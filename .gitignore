@@ -1,6 +1,8 @@
 *.o
 *.swp
 .sconsign.dblite
+*.sdf
+*.suo
 main
 src/pbc/libpbc.a
 Debug
