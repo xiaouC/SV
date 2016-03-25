@@ -129,6 +129,9 @@
     <ClInclude Include="MapStyleWnd.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="CreateSeamlessMapDlg.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="StardewValley.cpp">
@@ -159,6 +162,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="MapStyleWnd.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CreateSeamlessMapDlg.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

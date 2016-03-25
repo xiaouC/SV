@@ -9,6 +9,8 @@
 #include "MainFrm.h"
 #include "CCDirector.h"
 #include "MC/MCLoader.h"
+#include "Map/TLMapBlock.h"
+#include "Map/TLSeamlessMap.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -42,6 +44,7 @@ CChildView::CChildView()
 	m_pAppDelegate = NULL;
 	m_pGLView = NULL;
 	m_pMainNode = NULL;
+	m_pSMNode = NULL;
 }
 
 CChildView::~CChildView()
@@ -55,6 +58,7 @@ BEGIN_MESSAGE_MAP(CChildView, CWnd)
 	ON_WM_LBUTTONUP()
 	ON_WM_CREATE()
 	ON_WM_DESTROY()
+	ON_COMMAND(ID_OPEN_SM, &CChildView::OnOpenSm)
 END_MESSAGE_MAP()
 
 
@@ -128,7 +132,7 @@ int CChildView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_pMainNode = cocos2d::CCNode::create();
 	cocos2d::CCDirector::sharedDirector()->addOpenGLView( "MainView", m_pGLView, m_pMainNode );
 
-	m_pMainNode->addChild( MCLoader::sharedMCLoader()->loadSprite( "mc/mapStyle_1.png" ) );
+	//m_pMainNode->addChild( MCLoader::sharedMCLoader()->loadSprite( "mc/mapStyle_1.png" ) );
 
 	return 0;
 }
@@ -150,6 +154,13 @@ void CChildView::OnDestroy()
 
 BOOL CChildView::addSpriteByDrop( COleDataObject* pDataObject, CPoint pt, BOOL bTestOnly )
 {
+	if( m_pSMNode == NULL )
+	{
+		//AfxMessageBox( _T("请先打开地图！"), MB_OK );
+
+		return FALSE;
+	}
+
 	if( pDataObject->IsDataAvailable( CF_TEXT ) )
 	{
 		HGLOBAL hg = pDataObject->GetGlobalData( CF_TEXT );
@@ -168,10 +179,28 @@ BOOL CChildView::addSpriteByDrop( COleDataObject* pDataObject, CPoint pt, BOOL b
 				float x = pt.x - rect.Width() * 0.5f;
 				float y = rect.Height() * 0.5f - pt.y;
 
+				float sm_x = 0.0f;
+				float sm_y = 0.0f;
+				m_pSMNode->getPosition( &sm_x, &sm_y );
+
+				float fWorldX = x - sm_x;
+				float fWorldY = y - sm_y;
+				TLMapBlock* pMapBlock = m_pSMNode->getMapBlock( fWorldX, fWorldY );
+				if( pMapBlock == NULL )
+					return FALSE;
+
 				strData.erase( 0, 6 );
-				CCSprite* pSprite = MCLoader::sharedMCLoader()->loadSprite( strData.c_str() );
-				pSprite->setPosition( CCPoint( x, y ) );
-				m_pMainNode->addChild( pSprite );
+
+				float mb_x = 0.0f;
+				float mb_y = 0.0f;
+				pMapBlock->getPosition( &mb_x, &mb_y );
+				float fLocalX = fWorldX - mb_x;
+				float fLocalY = fWorldY - mb_y;
+				CCSprite* pSprite = pMapBlock->addSprite( strData, fLocalX, fLocalY );
+				if( pSprite == NULL )
+					return FALSE;
+
+				m_pEditSprite = pSprite;
 			}
 
 			return TRUE;
@@ -179,4 +208,19 @@ BOOL CChildView::addSpriteByDrop( COleDataObject* pDataObject, CPoint pt, BOOL b
 	}
 
 	return FALSE;
+}
+
+void CChildView::OnOpenSm()
+{
+	// TODO: 在此添加命令处理程序代码
+	TLSeamlessMap* pNewSMNode = TLSeamlessMap::create( "./map/FirstMap.sm", 0.0f, 0.0f );
+	if( pNewSMNode != NULL )
+	{
+		m_pMainNode->addChild( pNewSMNode );
+
+		if( m_pSMNode != NULL )
+			m_pSMNode->removeFromParentAndCleanup( true );
+
+		m_pSMNode = pNewSMNode;
+	}
 }

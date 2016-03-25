@@ -132,6 +132,7 @@
   <ItemGroup>
     <ClInclude Include="ChildView.h" />
     <ClInclude Include="ClassView.h" />
+    <ClInclude Include="CreateSeamlessMapDlg.h" />
     <ClInclude Include="FileView.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="MapStyleWnd.h" />
@@ -146,6 +147,7 @@
   <ItemGroup>
     <ClCompile Include="ChildView.cpp" />
     <ClCompile Include="ClassView.cpp" />
+    <ClCompile Include="CreateSeamlessMapDlg.cpp" />
     <ClCompile Include="FileView.cpp" />
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="MapStyleWnd.cpp" />
@@ -164,4 +166,9 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties RESOURCE_FILE="StardewValley.rc" />
+    </VisualStudio>
+  </ProjectExtensions>
 </Project>

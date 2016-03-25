@@ -4,8 +4,8 @@
 
 #include "stdafx.h"
 #include "StardewValley.h"
-
 #include "MainFrm.h"
+#include "CreateSeamlessMapDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -27,6 +27,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_COMMAND_RANGE(ID_VIEW_APPLOOK_WIN_2000, ID_VIEW_APPLOOK_WINDOWS_7, &CMainFrame::OnApplicationLook)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_VIEW_APPLOOK_WIN_2000, ID_VIEW_APPLOOK_WINDOWS_7, &CMainFrame::OnUpdateApplicationLook)
 	ON_WM_SETTINGCHANGE()
+	ON_COMMAND(ID_NEW_SM, &CMainFrame::OnNewSm)
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -447,4 +448,12 @@ void CMainFrame::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
 {
 	CFrameWndEx::OnSettingChange(uFlags, lpszSection);
 	m_wndOutput.UpdateFonts();
+}
+
+
+void CMainFrame::OnNewSm()
+{
+	// TODO: 在此添加命令处理程序代码
+	CCreateSeamlessMapDlg dlg;
+	dlg.DoModal();
 }

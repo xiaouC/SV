@@ -21,6 +21,7 @@ public:
 };
 
 // CChildView 窗口
+class TLSeamlessMap;
 class CChildView : public CWnd
 {
 // 构造
@@ -47,6 +48,9 @@ protected:
 	cocos2d::CCEGLView* m_pGLView;
 	cocos2d::CCNode* m_pMainNode;
 
+	TLSeamlessMap* m_pSMNode;
+	cocos2d::CCSprite* m_pEditSprite;
+
 	CMyDropTarget m_kOleTarget;
 
 	// 生成的消息映射函数
@@ -58,5 +62,6 @@ public:
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnDestroy();
+	afx_msg void OnOpenSm();
 };
 
