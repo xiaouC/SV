@@ -7,6 +7,7 @@
 #include "AppDelegate.h"
 #include "base_nodes\CCNode.h"
 #include "CCEGLView.h"
+#include "TLRunningScene.h"
 
 class CChildView;
 class CMyDropTarget : public COleDropTarget
@@ -46,12 +47,15 @@ public:
 protected:
 	AppDelegate* m_pAppDelegate;
 	cocos2d::CCEGLView* m_pGLView;
-	cocos2d::CCNode* m_pMainNode;
+	TLRunningScene* m_pMainNode;
 
 	TLSeamlessMap* m_pSMNode;
 	cocos2d::CCSprite* m_pEditSprite;
+	cocos2d::CCSprite* m_pSelectedSprite;
 
 	CMyDropTarget m_kOleTarget;
+
+	HACCEL   m_hAccel;
 
 	// 生成的消息映射函数
 protected:
@@ -59,9 +63,17 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
-	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnDestroy();
 	afx_msg void OnOpenSm();
+	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
+	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	afx_msg void OnChildViewUp();
+	afx_msg void OnChildViewDown();
+	afx_msg void OnChildViewLeft();
+	afx_msg void OnChildViewRight();
+	afx_msg void OnChildViewDelete();
 };
 

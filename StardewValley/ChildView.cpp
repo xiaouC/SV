@@ -51,20 +51,23 @@ CChildView::~CChildView()
 {
 }
 
-
 BEGIN_MESSAGE_MAP(CChildView, CWnd)
 	ON_WM_PAINT()
 	ON_WM_SIZE()
-	ON_WM_LBUTTONUP()
 	ON_WM_CREATE()
 	ON_WM_DESTROY()
 	ON_COMMAND(ID_OPEN_SM, &CChildView::OnOpenSm)
+	ON_WM_LBUTTONDOWN()
+	ON_WM_LBUTTONUP()
+	ON_WM_MOUSEMOVE()
+	ON_COMMAND(ID_CHILD_VIEW_UP, &CChildView::OnChildViewUp)
+	ON_COMMAND(ID_CHILD_VIEW_DOWN, &CChildView::OnChildViewDown)
+	ON_COMMAND(ID_CHILD_VIEW_LEFT, &CChildView::OnChildViewLeft)
+	ON_COMMAND(ID_CHILD_VIEW_RIGHT, &CChildView::OnChildViewRight)
+	ON_COMMAND(ID_CHILD_VIEW_DELETE, &CChildView::OnChildViewDelete)
 END_MESSAGE_MAP()
 
-
-
 // CChildView 消息处理程序
-
 BOOL CChildView::PreCreateWindow(CREATESTRUCT& cs) 
 {
 	if (!CWnd::PreCreateWindow(cs))
@@ -95,22 +98,13 @@ void CChildView::OnSize(UINT nType, int cx, int cy)
 	if( m_pGLView != NULL )
 	{
 		m_pGLView->setFrameSize( cx, cy );
-
-		cocos2d::CCSize kWinSizeInPoints = m_pGLView->getDesignResolutionSize();
-        m_pGLView->setViewPortInPoints(0, 0, kWinSizeInPoints.width, kWinSizeInPoints.height);
+		m_pGLView->setDesignResolutionSize( cx, cy, kResolutionShowAll );
+		//CCDirector::sharedDirector()->updateWinSizeInPoints();
+		//CCDirector::sharedDirector()->setProjection( kCCDirectorProjection3D );
 
 		m_pMainNode->setPosition( cx * 0.5f, cy * 0.5f );
 	}
 }
-
-
-void CChildView::OnLButtonUp(UINT nFlags, CPoint point)
-{
-	// TODO: 在此添加消息处理程序代码和/或调用默认值
-
-	CWnd::OnLButtonUp(nFlags, point);
-}
-
 
 int CChildView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
@@ -118,25 +112,44 @@ int CChildView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;
 
 	// TODO:  在此添加您专用的创建代码
+	m_hAccel = ::LoadAccelerators( AfxGetInstanceHandle(), MAKEINTRESOURCE( IDR_CHILD_VIEW ) );
+
 	m_kOleTarget.m_pChildView = this;
 	m_kOleTarget.Register( this );
 
 	m_pAppDelegate = new AppDelegate;
+
+	CCDirector* pDirector = CCDirector::sharedDirector();
+    m_pGLView = CCEGLView::sharedOpenGLView( m_hWnd );
+
+    pDirector->setOpenGLView( m_pGLView );
+
 	if( StartLua( CCLuaEngine::defaultEngine(), "main" ) != 0 )
 	{
         CCLog( "error start lua main.lua" );
     }
 
-	m_pGLView = cocos2d::CCEGLView::create( (int)m_hWnd );
-	m_pGLView->setFrameSize( 0, 0 );
-	m_pMainNode = cocos2d::CCNode::create();
-	cocos2d::CCDirector::sharedDirector()->addOpenGLView( "MainView", m_pGLView, m_pMainNode );
+	m_pGLView->setDesignResolutionSize( 1024, 768, kResolutionShowAll );
+	pDirector->setDisplayStats( true );
 
-	//m_pMainNode->addChild( MCLoader::sharedMCLoader()->loadSprite( "mc/mapStyle_1.png" ) );
+	m_pMainNode = TLRunningScene::create();
+	pDirector->runWithScene( m_pMainNode );
+
+	//m_pMainNode->setScale( 0.5 );
+	//m_pMainNode->addChild( MCLoader::sharedMCLoader()->loadSprite( "images/default.png" ) );
+	m_pMainNode->addChild( MCLoader::sharedMCLoader()->loadSprite( "mc/mapStyle_1.png" ) );
+
+	m_pSelectedSprite = MCLoader::sharedMCLoader()->loadSprite( "images/selected.png" );
+	m_pMainNode->addChild( m_pSelectedSprite );
+
+	//cocos2d::CCNode* pNode = cocos2d::CCNode::create();
+	//m_pMainNode->addChild( pNode );
+
+	//pNode->addChild( m_pSelectedSprite );
+	//pNode->addChild( MCLoader::sharedMCLoader()->loadSprite( "mc/mapStyle_1.png" ) );
 
 	return 0;
 }
-
 
 void CChildView::OnDestroy()
 {
@@ -222,5 +235,84 @@ void CChildView::OnOpenSm()
 			m_pSMNode->removeFromParentAndCleanup( true );
 
 		m_pSMNode = pNewSMNode;
+	}
+}
+
+
+void CChildView::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	// TODO: 在此添加消息处理程序代码和/或调用默认值
+
+	CWnd::OnLButtonDown(nFlags, point);
+}
+
+const float g_fSelectedWidth = 100.0f;
+const float g_fSelectedHeight = 100.0f;
+void CChildView::OnLButtonUp(UINT nFlags, CPoint point)
+{
+	// TODO: 在此添加消息处理程序代码和/或调用默认值
+
+	CWnd::OnLButtonUp(nFlags, point);
+}
+
+void CChildView::OnMouseMove(UINT nFlags, CPoint point)
+{
+	// TODO: 在此添加消息处理程序代码和/或调用默认值
+
+	CWnd::OnMouseMove(nFlags, point);
+}
+
+
+BOOL CChildView::PreTranslateMessage(MSG* pMsg)
+{
+	// TODO: 在此添加专用代码和/或调用基类
+	if( m_hAccel && ::TranslateAccelerator( m_hWnd, m_hAccel, pMsg ) )
+		return TRUE;
+
+	return CWnd::PreTranslateMessage(pMsg);
+}
+
+
+void CChildView::OnChildViewUp()
+{
+	// TODO: 在此添加命令处理程序代码
+	if( m_pEditSprite != NULL )
+	{
+	}
+}
+
+
+void CChildView::OnChildViewDown()
+{
+	// TODO: 在此添加命令处理程序代码
+	if( m_pEditSprite != NULL )
+	{
+	}
+}
+
+
+void CChildView::OnChildViewLeft()
+{
+	// TODO: 在此添加命令处理程序代码
+	if( m_pEditSprite != NULL )
+	{
+	}
+}
+
+
+void CChildView::OnChildViewRight()
+{
+	// TODO: 在此添加命令处理程序代码
+	if( m_pEditSprite != NULL )
+	{
+	}
+}
+
+
+void CChildView::OnChildViewDelete()
+{
+	// TODO: 在此添加命令处理程序代码
+	if( m_pEditSprite != NULL )
+	{
 	}
 }

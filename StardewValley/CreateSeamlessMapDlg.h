@@ -24,6 +24,7 @@ public:
 	int m_nBlockCol;
 	int m_nGridWidth;
 	int m_nGridHeight;
+	CString m_strMaterial;
 	CStatic m_kDefaultPNG;
 	afx_msg void OnStnClickedStaticDefaultPng();
 	afx_msg void OnBnClickedOk();

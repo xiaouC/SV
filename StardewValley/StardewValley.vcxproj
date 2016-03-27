@@ -51,13 +51,13 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\MCC\cocos2dx\;..\..\MCC\cocos2dx\support;..\..\MCC\cocos2dx\include;..\..\MCC\cocos2dx\platform;..\..\MCC\cocos2dx\platform\win32;..\..\MCC\cocos2dx\platform\third_party\win32;..\..\MCC\cocos2dx\platform\third_party\win32\pthread;..\..\MCC\cocos2dx\platform\third_party\win32\OGLES;..\..\MCC\cocos2dx\kazmath\include;..\..\MCC\CocosDenshion\include;..\..\MCC\scripting\lua\cocos2dx_support;..\..\MCC\scripting\lua\lua;..\..\MCC\scripting\lua\tolua;..\..\MCC\external\chipmunk\include\;..\..\YYFramework\src;..\..\protobuf-2.4.1\src;..\..\YYFramework\src\protocol\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\YYFramework\cocos2d-x-2.1.5\cocos2dx\;..\..\YYFramework\cocos2d-x-2.1.5\cocos2dx\support;..\..\YYFramework\cocos2d-x-2.1.5\cocos2dx\include;..\..\YYFramework\cocos2d-x-2.1.5\cocos2dx\platform;..\..\YYFramework\cocos2d-x-2.1.5\cocos2dx\platform\win32;..\..\YYFramework\cocos2d-x-2.1.5\cocos2dx\platform\third_party\win32;..\..\YYFramework\cocos2d-x-2.1.5\cocos2dx\platform\third_party\win32\pthread;..\..\YYFramework\cocos2d-x-2.1.5\cocos2dx\platform\third_party\win32\OGLES;..\..\YYFramework\cocos2d-x-2.1.5\cocos2dx\kazmath\include;..\..\YYFramework\cocos2d-x-2.1.5\CocosDenshion\include;..\..\YYFramework\cocos2d-x-2.1.5\scripting\lua\cocos2dx_support;..\..\YYFramework\cocos2d-x-2.1.5\scripting\lua\lua;..\..\YYFramework\cocos2d-x-2.1.5\scripting\lua\tolua;..\..\YYFramework\cocos2d-x-2.1.5\external\chipmunk\include\;..\..\YYFramework\src;..\..\protobuf-2.4.1\src;..\..\YYFramework\src\protocol\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/wd4819 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>..\$(Configuration).win32;..\..\debuglib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\$(Configuration).win32;..\..\YYFramework\debuglib</AdditionalLibraryDirectories>
       <AdditionalDependencies>opengl32.lib;glew32.lib;libcocos2d.lib;libCocosDenshion.lib;libExtensions.lib;liblua.lib;lua51.lib;libprotobuf-lite.lib;pthreadVCE2.lib;libcurl_imp.lib;libpbc.a;YYFramework.lib</AdditionalDependencies>
     </Link>
     <Midl>
@@ -139,8 +139,10 @@
     <ClInclude Include="OutputWnd.h" />
     <ClInclude Include="PropertiesWnd.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="SelectSurfaceTextureDlg.h" />
     <ClInclude Include="StardewValley.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="SurfaceTexStatic.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="ViewTree.h" />
   </ItemGroup>
@@ -153,11 +155,13 @@
     <ClCompile Include="MapStyleWnd.cpp" />
     <ClCompile Include="OutputWnd.cpp" />
     <ClCompile Include="PropertiesWnd.cpp" />
+    <ClCompile Include="SelectSurfaceTextureDlg.cpp" />
     <ClCompile Include="StardewValley.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="SurfaceTexStatic.cpp" />
     <ClCompile Include="ViewTree.cpp" />
   </ItemGroup>
   <ItemGroup>

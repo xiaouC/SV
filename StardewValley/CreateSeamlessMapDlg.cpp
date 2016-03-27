@@ -6,6 +6,7 @@
 #include "CreateSeamlessMapDlg.h"
 #include "afxdialogex.h"
 #include "Map/TLSeamlessMap.h"
+#include "SelectSurfaceTextureDlg.h"
 
 // CCreateSeamlessMapDlg 对话框
 
@@ -50,7 +51,9 @@ END_MESSAGE_MAP()
 void CCreateSeamlessMapDlg::OnStnClickedStaticDefaultPng()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	AfxMessageBox( _T("feifei"), MB_OK );
+	//AfxMessageBox( _T("feifei"), MB_OK );
+	CSelectSurfaceTextureDlg dlg;
+	dlg.DoModal();
 }
 
 
@@ -61,7 +64,7 @@ void CCreateSeamlessMapDlg::OnBnClickedOk()
 
 	CString strTemp;
 	strTemp.Format( "./map/%s", m_strFileName );
-	if( TLSeamlessMap::newSeamlessMap( strTemp.GetBuffer(), m_nBlockRow, m_nBlockCol, m_nGridWidth, m_nGridHeight ) )
+	if( TLSeamlessMap::newSeamlessMap( strTemp.GetBuffer(), m_nBlockRow, m_nBlockCol, m_nGridWidth, m_nGridHeight, m_strMaterial.GetBuffer() ) )
 	{
 		CDialogEx::OnOK();
 	}
