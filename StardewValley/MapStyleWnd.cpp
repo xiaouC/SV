@@ -283,7 +283,7 @@ void CMapDetail::OnPaint()
 	CRect rect;
 	GetWindowRect( &rect );
 
-	dc.FillRect( &rect,&m_bgBrush );
+	dc.FillRect( &rect, &m_bgBrush );
 
 	CPen bluePen( PS_SOLID, 2, RGB( 0, 0, 255 ) );    //∂®“Âª≠± 
 	CPen* pOldPen = dc.SelectObject( &bluePen );

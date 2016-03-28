@@ -28,6 +28,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_VIEW_APPLOOK_WIN_2000, ID_VIEW_APPLOOK_WINDOWS_7, &CMainFrame::OnUpdateApplicationLook)
 	ON_WM_SETTINGCHANGE()
 	ON_COMMAND(ID_NEW_SM, &CMainFrame::OnNewSm)
+	ON_WM_MOUSEWHEEL()
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -456,4 +457,22 @@ void CMainFrame::OnNewSm()
 	// TODO: 在此添加命令处理程序代码
 	CCreateSeamlessMapDlg dlg;
 	dlg.DoModal();
+}
+
+
+BOOL CMainFrame::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
+{
+	// TODO: 在此添加消息处理程序代码和/或调用默认值
+	if( zDelta > 0 )
+	{
+		m_wndView.m_fMainNodeScale *= 1.1f;
+		m_wndView.m_pMainScaleNode->setScale( m_wndView.m_fMainNodeScale );
+	}
+	else
+	{
+		m_wndView.m_fMainNodeScale *= 0.9f;
+		m_wndView.m_pMainScaleNode->setScale( m_wndView.m_fMainNodeScale );
+	}
+
+	return CFrameWndEx::OnMouseWheel(nFlags, zDelta, pt);
 }

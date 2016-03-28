@@ -23,8 +23,11 @@ public:
 
 // CChildView ´°¿Ú
 class TLSeamlessMap;
+class TLMapBlock;
+class CMainFrame;
 class CChildView : public CWnd
 {
+	friend class CMainFrame;
 // ¹¹Ôì
 public:
 	CChildView();
@@ -47,9 +50,13 @@ public:
 protected:
 	AppDelegate* m_pAppDelegate;
 	cocos2d::CCEGLView* m_pGLView;
+
+	float m_fMainNodeScale;
 	TLRunningScene* m_pMainNode;
+	cocos2d::CCNode* m_pMainScaleNode;
 
 	TLSeamlessMap* m_pSMNode;
+	TLMapBlock* m_pEditMapBlock;
 	cocos2d::CCSprite* m_pEditSprite;
 	cocos2d::CCSprite* m_pSelectedSprite;
 
@@ -75,5 +82,6 @@ public:
 	afx_msg void OnChildViewLeft();
 	afx_msg void OnChildViewRight();
 	afx_msg void OnChildViewDelete();
+	afx_msg void OnMouseHWheel(UINT nFlags, short zDelta, CPoint pt);
 };
 

@@ -65,6 +65,7 @@ protected:
 	void SetDockingWindowIcons(BOOL bHiColorIcons);
 public:
 	afx_msg void OnNewSm();
+	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
 };
 
 

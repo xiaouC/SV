@@ -43,8 +43,13 @@ CChildView::CChildView()
 {
 	m_pAppDelegate = NULL;
 	m_pGLView = NULL;
+	m_fMainNodeScale = 1.0f;
 	m_pMainNode = NULL;
+	m_pMainScaleNode = NULL;
 	m_pSMNode = NULL;
+	m_pEditMapBlock = NULL;
+	m_pEditSprite = NULL;
+	m_pSelectedSprite = NULL;
 }
 
 CChildView::~CChildView()
@@ -65,6 +70,7 @@ BEGIN_MESSAGE_MAP(CChildView, CWnd)
 	ON_COMMAND(ID_CHILD_VIEW_LEFT, &CChildView::OnChildViewLeft)
 	ON_COMMAND(ID_CHILD_VIEW_RIGHT, &CChildView::OnChildViewRight)
 	ON_COMMAND(ID_CHILD_VIEW_DELETE, &CChildView::OnChildViewDelete)
+	ON_WM_MOUSEHWHEEL()
 END_MESSAGE_MAP()
 
 // CChildView 消息处理程序
@@ -142,11 +148,9 @@ int CChildView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_pSelectedSprite = MCLoader::sharedMCLoader()->loadSprite( "images/selected.png" );
 	m_pMainNode->addChild( m_pSelectedSprite );
 
-	//cocos2d::CCNode* pNode = cocos2d::CCNode::create();
-	//m_pMainNode->addChild( pNode );
-
-	//pNode->addChild( m_pSelectedSprite );
-	//pNode->addChild( MCLoader::sharedMCLoader()->loadSprite( "mc/mapStyle_1.png" ) );
+	m_pMainScaleNode = cocos2d::CCNode::create();
+	m_pMainScaleNode->setScale( m_fMainNodeScale );
+	m_pMainNode->addChild( m_pMainScaleNode );
 
 	return 0;
 }
@@ -163,6 +167,7 @@ void CChildView::OnDestroy()
 	m_pAppDelegate = NULL;
 	m_pGLView = NULL;
 	m_pMainNode = NULL;
+	m_pMainScaleNode = NULL;
 }
 
 BOOL CChildView::addSpriteByDrop( COleDataObject* pDataObject, CPoint pt, BOOL bTestOnly )
@@ -213,6 +218,7 @@ BOOL CChildView::addSpriteByDrop( COleDataObject* pDataObject, CPoint pt, BOOL b
 				if( pSprite == NULL )
 					return FALSE;
 
+				m_pEditMapBlock = pMapBlock;
 				m_pEditSprite = pSprite;
 			}
 
@@ -226,10 +232,10 @@ BOOL CChildView::addSpriteByDrop( COleDataObject* pDataObject, CPoint pt, BOOL b
 void CChildView::OnOpenSm()
 {
 	// TODO: 在此添加命令处理程序代码
-	TLSeamlessMap* pNewSMNode = TLSeamlessMap::create( "./map/FirstMap.sm", 0.0f, 0.0f );
+	TLSeamlessMap* pNewSMNode = TLSeamlessMap::create( "./map/abc.sm", 0.0f, 0.0f );
 	if( pNewSMNode != NULL )
 	{
-		m_pMainNode->addChild( pNewSMNode );
+		m_pMainScaleNode->addChild( pNewSMNode );
 
 		if( m_pSMNode != NULL )
 			m_pSMNode->removeFromParentAndCleanup( true );
@@ -242,6 +248,7 @@ void CChildView::OnOpenSm()
 void CChildView::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
+	SetFocus();
 
 	CWnd::OnLButtonDown(nFlags, point);
 }
@@ -278,6 +285,7 @@ void CChildView::OnChildViewUp()
 	// TODO: 在此添加命令处理程序代码
 	if( m_pEditSprite != NULL )
 	{
+		m_pEditSprite->setPositionY( m_pEditSprite->getPositionY() + 1.0f );
 	}
 }
 
@@ -287,6 +295,7 @@ void CChildView::OnChildViewDown()
 	// TODO: 在此添加命令处理程序代码
 	if( m_pEditSprite != NULL )
 	{
+		m_pEditSprite->setPositionY( m_pEditSprite->getPositionY() - 1.0f );
 	}
 }
 
@@ -296,6 +305,7 @@ void CChildView::OnChildViewLeft()
 	// TODO: 在此添加命令处理程序代码
 	if( m_pEditSprite != NULL )
 	{
+		m_pEditSprite->setPositionX( m_pEditSprite->getPositionX() - 1.0f );
 	}
 }
 
@@ -305,6 +315,7 @@ void CChildView::OnChildViewRight()
 	// TODO: 在此添加命令处理程序代码
 	if( m_pEditSprite != NULL )
 	{
+		m_pEditSprite->setPositionX( m_pEditSprite->getPositionX() + 60.0f );
 	}
 }
 
@@ -314,5 +325,17 @@ void CChildView::OnChildViewDelete()
 	// TODO: 在此添加命令处理程序代码
 	if( m_pEditSprite != NULL )
 	{
+		m_pEditMapBlock->removeSprite( m_pEditSprite );
 	}
+}
+
+
+void CChildView::OnMouseHWheel(UINT nFlags, short zDelta, CPoint pt)
+{
+	// 此功能要求 Windows Vista 或更高版本。
+	// _WIN32_WINNT 符号必须 >= 0x0600。
+	// TODO: 在此添加消息处理程序代码和/或调用默认值
+	int n = zDelta;
+
+	CWnd::OnMouseHWheel(nFlags, zDelta, pt);
 }

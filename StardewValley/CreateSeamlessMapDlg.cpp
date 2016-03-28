@@ -53,7 +53,10 @@ void CCreateSeamlessMapDlg::OnStnClickedStaticDefaultPng()
 	// TODO: 在此添加控件通知处理程序代码
 	//AfxMessageBox( _T("feifei"), MB_OK );
 	CSelectSurfaceTextureDlg dlg;
-	dlg.DoModal();
+	if( dlg.DoModal() == IDOK )
+	{
+		m_strMaterial = dlg.getCurrentSelectedTexFile();
+	}
 }
 
 
