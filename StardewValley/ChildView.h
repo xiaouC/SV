@@ -1,13 +1,19 @@
 
 // ChildView.h : CChildView 类的接口
 //
-
-
 #pragma once
 #include "AppDelegate.h"
 #include "base_nodes\CCNode.h"
 #include "CCEGLView.h"
 #include "TLRunningScene.h"
+
+enum EDIT_MODE
+{
+	EDIT_MODE_SELECT,
+	EDIT_MODE_TRANSLATION,
+	EDIT_MODE_ROTATION,
+	EDIT_MODE_SCALE,
+};
 
 class CChildView;
 class CMyDropTarget : public COleDropTarget
@@ -58,11 +64,19 @@ protected:
 	TLSeamlessMap* m_pSMNode;
 	TLMapBlock* m_pEditMapBlock;
 	cocos2d::CCSprite* m_pEditSprite;
-	cocos2d::CCSprite* m_pSelectedSprite;
 
 	CMyDropTarget m_kOleTarget;
 
 	HACCEL   m_hAccel;
+
+protected:
+	BOOL m_bDownFlag;
+	float m_fLastRotation;
+	float m_fDownX, m_fDownY;
+	BOOL convertPoint( const CPoint& point, float& ret_x, float& ret_y );
+	void rotatePoint( const CPoint& point );
+
+	int m_nEditMode;
 
 	// 生成的消息映射函数
 protected:

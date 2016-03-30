@@ -29,6 +29,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_WM_SETTINGCHANGE()
 	ON_COMMAND(ID_NEW_SM, &CMainFrame::OnNewSm)
 	ON_WM_MOUSEWHEEL()
+	ON_COMMAND_RANGE(ID_TB_SELECT, ID_TB_SCALE, &CMainFrame::OnEditType)
+	ON_UPDATE_COMMAND_UI_RANGE(ID_TB_SELECT, ID_TB_SCALE, &CMainFrame::OnUpdateEditType)
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -90,10 +92,23 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	ASSERT(bNameValid);
 	m_wndToolBar.SetWindowText(strToolBarName);
 
+	if (!m_wndEditToolBar.CreateEx(this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC) ||
+		!m_wndEditToolBar.LoadToolBar( IDR_TOOLBAR_EDIT ))
+	{
+		TRACE0("未能创建工具栏\n");
+		return -1;      // 未能创建
+	}
+
+	CString strEditToolBarName;
+	bNameValid = strEditToolBarName.LoadString(IDS_TOOLBAR_STANDARD);
+	ASSERT(bNameValid);
+	m_wndEditToolBar.SetWindowText(strEditToolBarName);
+
 	CString strCustomize;
 	bNameValid = strCustomize.LoadString(IDS_TOOLBAR_CUSTOMIZE);
 	ASSERT(bNameValid);
 	m_wndToolBar.EnableCustomizeButton(TRUE, ID_VIEW_CUSTOMIZE, strCustomize);
+	m_wndEditToolBar.EnableCustomizeButton(TRUE, ID_VIEW_CUSTOMIZE, strCustomize);
 
 	// 允许用户定义的工具栏操作:
 	InitUserToolbars(NULL, uiFirstUserToolBarId, uiLastUserToolBarId);
@@ -108,9 +123,11 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	// TODO: 如果您不希望工具栏和菜单栏可停靠，请删除这五行
 	m_wndMenuBar.EnableDocking(CBRS_ALIGN_ANY);
 	m_wndToolBar.EnableDocking(CBRS_ALIGN_ANY);
+	m_wndEditToolBar.EnableDocking(CBRS_ALIGN_ANY);
 	EnableDocking(CBRS_ALIGN_ANY);
 	DockPane(&m_wndMenuBar);
 	DockPane(&m_wndToolBar);
+	DockPane(&m_wndEditToolBar);
 
 
 	// 启用 Visual Studio 2005 样式停靠窗口行为
@@ -179,7 +196,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	lstBasicCommands.AddTail(ID_SORTING_SORTBYACCESS);
 	lstBasicCommands.AddTail(ID_SORTING_GROUPBYTYPE);
 
-	CMFCToolBar::SetBasicCommands(lstBasicCommands);
+	//CMFCToolBar::SetBasicCommands(lstBasicCommands);
 
 	// init cocos
 	CRect rect;
@@ -463,16 +480,28 @@ void CMainFrame::OnNewSm()
 BOOL CMainFrame::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
-	if( zDelta > 0 )
-	{
-		m_wndView.m_fMainNodeScale *= 1.1f;
-		m_wndView.m_pMainScaleNode->setScale( m_wndView.m_fMainNodeScale );
-	}
-	else
-	{
-		m_wndView.m_fMainNodeScale *= 0.9f;
-		m_wndView.m_pMainScaleNode->setScale( m_wndView.m_fMainNodeScale );
-	}
+
+
+	m_wndView.OnMouseHWheel(nFlags, zDelta, pt);
 
 	return CFrameWndEx::OnMouseWheel(nFlags, zDelta, pt);
+}
+
+void CMainFrame::onFrameMove()
+{
+	if( m_wndView.m_pAppDelegate != NULL )
+	{
+		cocos2d::CCDirector::sharedDirector()->mainLoop();
+	}
+}
+
+void CMainFrame::OnEditType(UINT id)
+{
+	m_wndView.m_nEditMode = id - ID_TB_SELECT + EDIT_MODE_SELECT;
+}
+
+void CMainFrame::OnUpdateEditType(CCmdUI* pCmdUI)
+{
+	int nEditID = m_wndView.m_nEditMode + ID_TB_SELECT - EDIT_MODE_SELECT;
+	pCmdUI->SetCheck(nEditID == pCmdUI->m_nID);
 }

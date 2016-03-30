@@ -49,7 +49,11 @@ CChildView::CChildView()
 	m_pSMNode = NULL;
 	m_pEditMapBlock = NULL;
 	m_pEditSprite = NULL;
-	m_pSelectedSprite = NULL;
+
+	m_fDownX = 0.0f;
+	m_fDownY = 0.0f;
+
+	m_nEditMode = EDIT_MODE_SELECT;
 }
 
 CChildView::~CChildView()
@@ -70,7 +74,6 @@ BEGIN_MESSAGE_MAP(CChildView, CWnd)
 	ON_COMMAND(ID_CHILD_VIEW_LEFT, &CChildView::OnChildViewLeft)
 	ON_COMMAND(ID_CHILD_VIEW_RIGHT, &CChildView::OnChildViewRight)
 	ON_COMMAND(ID_CHILD_VIEW_DELETE, &CChildView::OnChildViewDelete)
-	ON_WM_MOUSEHWHEEL()
 END_MESSAGE_MAP()
 
 // CChildView 消息处理程序
@@ -141,13 +144,6 @@ int CChildView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_pMainNode = TLRunningScene::create();
 	pDirector->runWithScene( m_pMainNode );
 
-	//m_pMainNode->setScale( 0.5 );
-	//m_pMainNode->addChild( MCLoader::sharedMCLoader()->loadSprite( "images/default.png" ) );
-	m_pMainNode->addChild( MCLoader::sharedMCLoader()->loadSprite( "mc/mapStyle_1.png" ) );
-
-	m_pSelectedSprite = MCLoader::sharedMCLoader()->loadSprite( "images/selected.png" );
-	m_pMainNode->addChild( m_pSelectedSprite );
-
 	m_pMainScaleNode = cocos2d::CCNode::create();
 	m_pMainScaleNode->setScale( m_fMainNodeScale );
 	m_pMainNode->addChild( m_pMainScaleNode );
@@ -160,14 +156,18 @@ void CChildView::OnDestroy()
 	CWnd::OnDestroy();
 
 	// TODO: 在此处添加消息处理程序代码
-	CCDirector::sharedDirector()->end();
-	CCDirector::sharedDirector()->mainLoop();
+	if( m_pAppDelegate != NULL )
+	{
+		CCDirector::sharedDirector()->end();
+		CCDirector::sharedDirector()->mainLoop();
 
-	//Sdelete m_pAppDelegate;
-	m_pAppDelegate = NULL;
-	m_pGLView = NULL;
-	m_pMainNode = NULL;
-	m_pMainScaleNode = NULL;
+		//Sdelete m_pAppDelegate;
+		delete m_pAppDelegate;
+		m_pAppDelegate = NULL;
+		m_pGLView = NULL;
+		m_pMainNode = NULL;
+		m_pMainScaleNode = NULL;
+	}
 }
 
 BOOL CChildView::addSpriteByDrop( COleDataObject* pDataObject, CPoint pt, BOOL bTestOnly )
@@ -194,8 +194,8 @@ BOOL CChildView::addSpriteByDrop( COleDataObject* pDataObject, CPoint pt, BOOL b
 				CRect rect;
 				GetWindowRect( &rect );
 
-				float x = pt.x - rect.Width() * 0.5f;
-				float y = rect.Height() * 0.5f - pt.y;
+				float x = ( pt.x - rect.Width() * 0.5f ) / m_fMainNodeScale;
+				float y = ( rect.Height() * 0.5f - pt.y ) / m_fMainNodeScale;
 
 				float sm_x = 0.0f;
 				float sm_y = 0.0f;
@@ -231,17 +231,33 @@ BOOL CChildView::addSpriteByDrop( COleDataObject* pDataObject, CPoint pt, BOOL b
 
 void CChildView::OnOpenSm()
 {
-	// TODO: 在此添加命令处理程序代码
-	TLSeamlessMap* pNewSMNode = TLSeamlessMap::create( "./map/abc.sm", 0.0f, 0.0f );
-	if( pNewSMNode != NULL )
-	{
-		m_pMainScaleNode->addChild( pNewSMNode );
+	// TODO: 在此添加命令处理程序代码 
+	char chFileName[MAX_PATH];   
+	GetCurrentDirectory( MAX_PATH, chFileName); 
 
-		if( m_pSMNode != NULL )
-			m_pSMNode->removeFromParentAndCleanup( true );
+	CString strDir;
+	strDir.Format( "%s/map/", chFileName );
 
-		m_pSMNode = pNewSMNode;
-	}
+	TCHAR szFilter[] = _T("地图文件(*.sm)|*.sm|所有文件(*.*)|*.*||"); 
+    CFileDialog openFileDlg( TRUE, _T("sm"), NULL, OFN_HIDEREADONLY | OFN_READONLY | OFN_NOCHANGEDIR, szFilter, this );  
+    openFileDlg.GetOFN().lpstrInitialDir = strDir;  
+    if( openFileDlg.DoModal() == IDOK ) {  
+        CString strFilePath = openFileDlg.GetPathName();
+		strFilePath.Delete( 0, strlen( chFileName ) + 1 );
+
+		std::string strFileName = strFilePath.GetBuffer();
+		//std::string strFileName = "./map/abc.sm";
+		TLSeamlessMap* pNewSMNode = TLSeamlessMap::create( strFileName, 0.0f, 0.0f );
+		if( pNewSMNode != NULL )
+		{
+			m_pMainScaleNode->addChild( pNewSMNode );
+
+			if( m_pSMNode != NULL )
+				m_pSMNode->removeFromParentAndCleanup( true );
+
+			m_pSMNode = pNewSMNode;
+		}
+    }
 }
 
 
@@ -249,6 +265,12 @@ void CChildView::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
 	SetFocus();
+
+	//m_bDownFlag = TRUE;
+	//if( convertPoint( point, m_fDownX, m_fDownY ) )
+	//{
+	//	m_fLastRotation = m_pEditSprite->getRotation();
+	//}
 
 	CWnd::OnLButtonDown(nFlags, point);
 }
@@ -258,6 +280,10 @@ const float g_fSelectedHeight = 100.0f;
 void CChildView::OnLButtonUp(UINT nFlags, CPoint point)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
+	//if( m_bDownFlag && ( nFlags & MK_CONTROL ) )
+	//	rotatePoint( point );
+
+	//m_bDownFlag = FALSE;
 
 	CWnd::OnLButtonUp(nFlags, point);
 }
@@ -265,6 +291,8 @@ void CChildView::OnLButtonUp(UINT nFlags, CPoint point)
 void CChildView::OnMouseMove(UINT nFlags, CPoint point)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
+	//if( m_bDownFlag && ( nFlags & MK_CONTROL ) )
+	//	rotatePoint( point );
 
 	CWnd::OnMouseMove(nFlags, point);
 }
@@ -283,9 +311,28 @@ BOOL CChildView::PreTranslateMessage(MSG* pMsg)
 void CChildView::OnChildViewUp()
 {
 	// TODO: 在此添加命令处理程序代码
-	if( m_pEditSprite != NULL )
+	switch( m_nEditMode )
 	{
-		m_pEditSprite->setPositionY( m_pEditSprite->getPositionY() + 1.0f );
+	case EDIT_MODE_SELECT:
+		break;
+	case EDIT_MODE_TRANSLATION:
+		if( m_pEditMapBlock != NULL )
+		{
+			m_pEditMapBlock->moveSprite( m_pEditSprite, 0.0f, 1.0f );
+		}
+		break;
+	//case EDIT_MODE_ROTATION:
+	//	if( m_pEditMapBlock != NULL )
+	//	{
+	//		m_pEditMapBlock->rotateSprite( m_pEditSprite, 1.0f );
+	//	}
+	//	break;
+	//case EDIT_MODE_SCALE:
+	//	if( m_pEditMapBlock != NULL )
+	//	{
+	//		m_pEditMapBlock->scaleSprite( m_pEditSprite, 1.1f );
+	//	}
+	//	break;
 	}
 }
 
@@ -293,9 +340,28 @@ void CChildView::OnChildViewUp()
 void CChildView::OnChildViewDown()
 {
 	// TODO: 在此添加命令处理程序代码
-	if( m_pEditSprite != NULL )
+	switch( m_nEditMode )
 	{
-		m_pEditSprite->setPositionY( m_pEditSprite->getPositionY() - 1.0f );
+	case EDIT_MODE_SELECT:
+		break;
+	case EDIT_MODE_TRANSLATION:
+		if( m_pEditMapBlock != NULL )
+		{
+			m_pEditMapBlock->moveSprite( m_pEditSprite, 0.0f, -1.0f );
+		}
+		break;
+	//case EDIT_MODE_ROTATION:
+	//	if( m_pEditMapBlock != NULL )
+	//	{
+	//		m_pEditMapBlock->rotateSprite( m_pEditSprite, 1.0f );
+	//	}
+	//	break;
+	//case EDIT_MODE_SCALE:
+	//	if( m_pEditMapBlock != NULL )
+	//	{
+	//		m_pEditMapBlock->scaleSprite( m_pEditSprite, 1.1f );
+	//	}
+	//	break;
 	}
 }
 
@@ -303,9 +369,28 @@ void CChildView::OnChildViewDown()
 void CChildView::OnChildViewLeft()
 {
 	// TODO: 在此添加命令处理程序代码
-	if( m_pEditSprite != NULL )
+	switch( m_nEditMode )
 	{
-		m_pEditSprite->setPositionX( m_pEditSprite->getPositionX() - 1.0f );
+	case EDIT_MODE_SELECT:
+		break;
+	case EDIT_MODE_TRANSLATION:
+		if( m_pEditMapBlock != NULL )
+		{
+			m_pEditMapBlock->moveSprite( m_pEditSprite, -1.0f, 0.0f );
+		}
+		break;
+	case EDIT_MODE_ROTATION:
+		if( m_pEditMapBlock != NULL )
+		{
+			m_pEditMapBlock->rotateSprite( m_pEditSprite, 1.0f );
+		}
+		break;
+	//case EDIT_MODE_SCALE:
+	//	if( m_pEditMapBlock != NULL )
+	//	{
+	//		m_pEditMapBlock->scaleSprite( m_pEditSprite, 1.1f );
+	//	}
+	//	break;
 	}
 }
 
@@ -313,9 +398,28 @@ void CChildView::OnChildViewLeft()
 void CChildView::OnChildViewRight()
 {
 	// TODO: 在此添加命令处理程序代码
-	if( m_pEditSprite != NULL )
+	switch( m_nEditMode )
 	{
-		m_pEditSprite->setPositionX( m_pEditSprite->getPositionX() + 60.0f );
+	case EDIT_MODE_SELECT:
+		break;
+	case EDIT_MODE_TRANSLATION:
+		if( m_pEditMapBlock != NULL )
+		{
+			m_pEditMapBlock->moveSprite( m_pEditSprite, 1.0f, 0.0f );
+		}
+		break;
+	case EDIT_MODE_ROTATION:
+		if( m_pEditMapBlock != NULL )
+		{
+			m_pEditMapBlock->rotateSprite( m_pEditSprite, -1.0f );
+		}
+		break;
+	//case EDIT_MODE_SCALE:
+	//	if( m_pEditMapBlock != NULL )
+	//	{
+	//		m_pEditMapBlock->scaleSprite( m_pEditSprite, 1.1f );
+	//	}
+	//	break;
 	}
 }
 
@@ -329,13 +433,95 @@ void CChildView::OnChildViewDelete()
 	}
 }
 
-
 void CChildView::OnMouseHWheel(UINT nFlags, short zDelta, CPoint pt)
 {
-	// 此功能要求 Windows Vista 或更高版本。
-	// _WIN32_WINNT 符号必须 >= 0x0600。
-	// TODO: 在此添加消息处理程序代码和/或调用默认值
-	int n = zDelta;
+	if( zDelta > 0 )
+	{
+		if( m_nEditMode == EDIT_MODE_SCALE )
+		{
+			m_pEditMapBlock->scaleSprite( m_pEditSprite, 1.1f );
+		}
+		else
+		{
+			m_fMainNodeScale *= 1.1f;
+			m_pMainScaleNode->setScale( m_fMainNodeScale );
+		}
+	}
+	else
+	{
+		if( m_nEditMode == EDIT_MODE_SCALE )
+		{
+			m_pEditMapBlock->scaleSprite( m_pEditSprite, 0.9f );
+		}
+		else
+		{
+			m_fMainNodeScale *= 0.9f;
+			m_pMainScaleNode->setScale( m_fMainNodeScale );
+		}
+	}
+}
 
-	CWnd::OnMouseHWheel(nFlags, zDelta, pt);
+BOOL CChildView::convertPoint( const CPoint& point, float& ret_x, float& ret_y )
+{
+	if( m_pEditMapBlock == NULL || m_pEditSprite == NULL )
+		return FALSE;
+
+	CRect rect;
+	GetWindowRect( &rect );
+
+	float x = ( point.x - rect.Width() * 0.5f ) / m_fMainNodeScale;
+	float y = ( rect.Height() * 0.5f - point.y ) / m_fMainNodeScale;
+
+	float sm_x = 0.0f;
+	float sm_y = 0.0f;
+	m_pSMNode->getPosition( &sm_x, &sm_y );
+
+	float fWorldX = x - sm_x;
+	float fWorldY = y - sm_y;
+
+	float mb_x = 0.0f;
+	float mb_y = 0.0f;
+	m_pEditMapBlock->getPosition( &mb_x, &mb_y );
+
+	ret_x = fWorldX - mb_x;
+	ret_y = fWorldY - mb_y;
+
+	return TRUE;
+}
+
+void CChildView::rotatePoint( const CPoint& point )
+{
+	float x = 0.0f, y = 0.0f;
+	if( convertPoint( point, x, y ) )
+	{
+		float sx, sy;
+		m_pEditSprite->getPosition( &sx, &sy );
+
+		// Vector3 u( u1, u2, u3 )
+		float u1 = m_fDownX - sx;
+		float u2 = m_fDownY - sy;
+		float u3 = 0.0f;
+
+		// Vector3 v( v1, v2, v3 )
+		float v1 = x - sx;
+		float v2 = y - sy;
+		float v3 = 0.0f;
+
+		// u.cross( v )
+		float cross_x = u2 * v3 - v2 * u3;
+		float cross_y = u3 * v1 - v3 * u1;
+		float cross_z = u1 * v2 - u2 * v1;
+
+		float fAngle = abs( acos( ( u1 * v2 + u2 * v2 ) / sqrt( ( u1 * u1 + u2 * u2 ) * ( v1 * v1 + v2 * v2 ) ) ) );
+
+		char chBuf[64];
+		sprintf( chBuf, "%f\n", fAngle );
+		OutputDebugString( chBuf );
+
+		if( cross_z > 0.0f )
+			fAngle = -fAngle;
+
+		fAngle *= 180.0f / M_PI;
+		m_pEditSprite->setRotation( m_fLastRotation + fAngle );
+	}
 }

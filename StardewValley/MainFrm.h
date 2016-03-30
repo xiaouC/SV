@@ -23,6 +23,7 @@ public:
 
 // 操作
 public:
+	void onFrameMove();
 
 // 重写
 public:
@@ -49,6 +50,7 @@ protected:  // 控件条嵌入成员
 	COutputWnd        m_wndOutput;
 	CPropertiesWnd    m_wndProperties;
 	CChildView    m_wndView;
+	CMFCToolBar       m_wndEditToolBar;
 
 // 生成的消息映射函数
 protected:
@@ -59,6 +61,8 @@ protected:
 	afx_msg void OnApplicationLook(UINT id);
 	afx_msg void OnUpdateApplicationLook(CCmdUI* pCmdUI);
 	afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
+	afx_msg void OnEditType(UINT id);
+	afx_msg void OnUpdateEditType(CCmdUI* pCmdUI);
 	DECLARE_MESSAGE_MAP()
 
 	BOOL CreateDockingWindows();

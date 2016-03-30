@@ -21,6 +21,10 @@ CMapStyleWnd::CMapStyleWnd()
 
 CMapStyleWnd::~CMapStyleWnd()
 {
+	std::map<CString, CMapDetail*>::iterator iter = m_mapMapDetails.begin();
+	std::map<CString, CMapDetail*>::iterator iter_end = m_mapMapDetails.end();
+	for( ; iter != iter_end; ++iter )
+		delete iter->second;
 }
 
 BEGIN_MESSAGE_MAP(CMapStyleWnd, CDockablePane)
@@ -134,6 +138,12 @@ CMapDetail::CMapDetail()
 
 CMapDetail::~CMapDetail()
 {
+	std::map<std::string,ImageInfo>::iterator iter = m_mapImages.begin();
+	std::map<std::string,ImageInfo>::iterator iter_end = m_mapImages.end();
+	for( ; iter != iter_end; ++iter )
+	{
+		delete iter->second.pImage;
+	}
 }
 
 BEGIN_MESSAGE_MAP(CMapDetail, CStatic)

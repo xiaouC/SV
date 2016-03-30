@@ -126,7 +126,9 @@
     <None Include="res\StardewValley.ico" />
     <None Include="res\StardewValley.rc2" />
     <None Include="res\Toolbar.bmp" />
+    <None Include="res\toolbar1.bmp" />
     <None Include="res\Toolbar256.bmp" />
+    <None Include="res\toolbarEdit.bmp" />
     <None Include="UserImages.bmp" />
   </ItemGroup>
   <ItemGroup>

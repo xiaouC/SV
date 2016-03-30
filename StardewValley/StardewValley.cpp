@@ -190,7 +190,7 @@ void CStardewValleyApp::SaveCustomState()
 BOOL CStardewValleyApp::OnIdle(LONG lCount)
 {
 	// TODO: 在此添加专用代码和/或调用基类
-	cocos2d::CCDirector::sharedDirector()->mainLoop();
+	((CMainFrame*)AfxGetMainWnd())->onFrameMove();
 
 	return CWinAppEx::OnIdle(lCount);
 }
