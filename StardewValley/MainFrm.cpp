@@ -495,6 +495,11 @@ void CMainFrame::onFrameMove()
 	}
 }
 
+void CMainFrame::openSeamlessMap( const CString& strFileName )
+{
+	m_wndView.openSeamlessMap( strFileName );
+}
+
 void CMainFrame::OnEditType(UINT id)
 {
 	m_wndView.m_nEditMode = id - ID_TB_SELECT + EDIT_MODE_SELECT;

@@ -7,6 +7,8 @@
 #include "afxdialogex.h"
 #include "Map/TLSeamlessMap.h"
 #include "SelectSurfaceTextureDlg.h"
+#include "MainFrm.h"
+#include "ChildView.h"
 
 // CCreateSeamlessMapDlg ¶Ô»°¿ò
 
@@ -69,6 +71,10 @@ void CCreateSeamlessMapDlg::OnBnClickedOk()
 	strTemp.Format( "./map/%s", m_strFileName );
 	if( TLSeamlessMap::newSeamlessMap( strTemp.GetBuffer(), m_nBlockRow, m_nBlockCol, m_nGridWidth, m_nGridHeight, m_strMaterial.GetBuffer() ) )
 	{
+		strTemp.Append( ".sm" );
+
+		((CMainFrame*)AfxGetMainWnd())->openSeamlessMap( strTemp );
+
 		CDialogEx::OnOK();
 	}
 	else

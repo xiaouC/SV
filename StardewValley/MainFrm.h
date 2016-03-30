@@ -24,6 +24,7 @@ public:
 // ²Ù×÷
 public:
 	void onFrameMove();
+	void openSeamlessMap( const CString& strFileName );
 
 // ÖØÐ´
 public:

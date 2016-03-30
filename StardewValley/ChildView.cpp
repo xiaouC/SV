@@ -66,6 +66,7 @@ BEGIN_MESSAGE_MAP(CChildView, CWnd)
 	ON_WM_CREATE()
 	ON_WM_DESTROY()
 	ON_COMMAND(ID_OPEN_SM, &CChildView::OnOpenSm)
+	ON_COMMAND(ID_SAVE_SM, &CChildView::OnSaveSm)
 	ON_WM_LBUTTONDOWN()
 	ON_WM_LBUTTONUP()
 	ON_WM_MOUSEMOVE()
@@ -245,21 +246,31 @@ void CChildView::OnOpenSm()
         CString strFilePath = openFileDlg.GetPathName();
 		strFilePath.Delete( 0, strlen( chFileName ) + 1 );
 
-		std::string strFileName = strFilePath.GetBuffer();
-		//std::string strFileName = "./map/abc.sm";
-		TLSeamlessMap* pNewSMNode = TLSeamlessMap::create( strFileName, 0.0f, 0.0f );
-		if( pNewSMNode != NULL )
-		{
-			m_pMainScaleNode->addChild( pNewSMNode );
-
-			if( m_pSMNode != NULL )
-				m_pSMNode->removeFromParentAndCleanup( true );
-
-			m_pSMNode = pNewSMNode;
-		}
+		openSeamlessMap( strFilePath );
     }
 }
 
+void CChildView::openSeamlessMap( CString strFileName )
+{
+	std::string strTempFileName = strFileName.GetBuffer();
+	TLSeamlessMap* pNewSMNode = TLSeamlessMap::create( strTempFileName, 0.0f, 0.0f );
+	if( pNewSMNode != NULL )
+	{
+		m_pMainScaleNode->addChild( pNewSMNode );
+
+		if( m_pSMNode != NULL )
+			m_pSMNode->removeFromParentAndCleanup( true );
+
+		m_pSMNode = pNewSMNode;
+	}
+}
+
+void CChildView::OnSaveSm()
+{
+	// TODO: 在此添加命令处理程序代码
+	if( m_pSMNode != NULL )
+		m_pSMNode->save();
+}
 
 void CChildView::OnLButtonDown(UINT nFlags, CPoint point)
 {

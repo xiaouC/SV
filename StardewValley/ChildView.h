@@ -43,6 +43,7 @@ public:
 
 // ²Ù×÷
 public:
+	void openSeamlessMap( CString strFileName );
 	BOOL addSpriteByDrop( COleDataObject* pDataObject, CPoint pt, BOOL bTestOnly );
 
 // ÖØÐ´
@@ -87,6 +88,7 @@ public:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnDestroy();
 	afx_msg void OnOpenSm();
+	afx_msg void OnSaveSm();
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
