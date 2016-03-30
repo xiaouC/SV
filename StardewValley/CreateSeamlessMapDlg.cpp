@@ -6,7 +6,6 @@
 #include "CreateSeamlessMapDlg.h"
 #include "afxdialogex.h"
 #include "Map/TLSeamlessMap.h"
-#include "SelectSurfaceTextureDlg.h"
 #include "MainFrm.h"
 #include "ChildView.h"
 
@@ -36,7 +35,6 @@ void CCreateSeamlessMapDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_COL, m_nBlockCol);
 	DDX_Text(pDX, IDC_EDIT_WIDTH, m_nGridWidth);
 	DDX_Text(pDX, IDC_EDIT_HEIGHT, m_nGridHeight);
-	DDX_Control(pDX, IDC_STATIC_DEFAULT_PNG, m_kDefaultPNG);
 	DDX_Text(pDX, IDC_EDIT_FILE_NAME, m_strFileName);
 }
 
@@ -44,6 +42,7 @@ void CCreateSeamlessMapDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CCreateSeamlessMapDlg, CDialogEx)
 	ON_STN_CLICKED(IDC_STATIC_DEFAULT_PNG, &CCreateSeamlessMapDlg::OnStnClickedStaticDefaultPng)
 	ON_BN_CLICKED(IDOK, &CCreateSeamlessMapDlg::OnBnClickedOk)
+	ON_WM_CREATE()
 END_MESSAGE_MAP()
 
 
@@ -53,11 +52,22 @@ END_MESSAGE_MAP()
 void CCreateSeamlessMapDlg::OnStnClickedStaticDefaultPng()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	//AfxMessageBox( _T("feifei"), MB_OK );
 	CSelectSurfaceTextureDlg dlg;
+	dlg.m_strInitSelectedFileName = m_strMaterial;
 	if( dlg.DoModal() == IDOK )
 	{
 		m_strMaterial = dlg.getCurrentSelectedTexFile();
+
+		CStatic* pStatic = (CStatic*)GetDlgItem( IDC_STATIC_DEFAULT_PNG );
+		if( pStatic != NULL )
+		{
+			CString strTemp;
+			strTemp.Format( "images/%s", m_strMaterial );
+
+			CImage image;
+			image.Load( strTemp );
+			pStatic->SetBitmap( image.Detach() );
+		}
 	}
 }
 
@@ -66,6 +76,13 @@ void CCreateSeamlessMapDlg::OnBnClickedOk()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	UpdateData();
+
+	if( m_strFileName.IsEmpty() )
+	{
+		AfxMessageBox( _T("地图名不能为空！"), MB_OK );
+
+		return;
+	}
 
 	CString strTemp;
 	strTemp.Format( "./map/%s", m_strFileName );
@@ -81,4 +98,39 @@ void CCreateSeamlessMapDlg::OnBnClickedOk()
 	{
 		AfxMessageBox( _T("创建失败！"), MB_OK );
 	}
+}
+
+
+int CCreateSeamlessMapDlg::OnCreate(LPCREATESTRUCT lpCreateStruct)
+{
+	if (CDialogEx::OnCreate(lpCreateStruct) == -1)
+		return -1;
+
+	// TODO:  在此添加您专用的创建代码
+
+	return 0;
+}
+
+
+BOOL CCreateSeamlessMapDlg::OnInitDialog()
+{
+	CDialogEx::OnInitDialog();
+
+	// TODO:  在此添加额外的初始化
+	GetPrivateProfileString( _T("init"), "surfaceTex1", _T(""), m_strMaterial.GetBuffer( MAX_PATH ), MAX_PATH, _T("./Editor/MapBlock.ini") );
+
+	CStatic* pStatic = (CStatic*)GetDlgItem( IDC_STATIC_DEFAULT_PNG );
+	if( pStatic != NULL )
+	{
+		CString strTemp;
+		strTemp.Format( "images/%s", m_strMaterial );
+
+		CImage image;
+		image.Load( strTemp );
+		pStatic->SetBitmap( image.Detach() );
+	}
+
+
+	return TRUE;  // return TRUE unless you set the focus to a control
+	// 异常: OCX 属性页应返回 FALSE
 }

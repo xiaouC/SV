@@ -1,9 +1,8 @@
 #pragma once
 #include "afxwin.h"
-
+#include "SelectSurfaceTextureDlg.h"
 
 // CCreateSeamlessMapDlg 对话框
-
 class CCreateSeamlessMapDlg : public CDialogEx
 {
 	DECLARE_DYNAMIC(CCreateSeamlessMapDlg)
@@ -19,14 +18,15 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
 
 	DECLARE_MESSAGE_MAP()
-	int m_nBlockRow;
 public:
+	int m_nBlockRow;
 	int m_nBlockCol;
 	int m_nGridWidth;
 	int m_nGridHeight;
+	CString m_strFileName;
 	CString m_strMaterial;
-	CStatic m_kDefaultPNG;
 	afx_msg void OnStnClickedStaticDefaultPng();
 	afx_msg void OnBnClickedOk();
-	CString m_strFileName;
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	virtual BOOL OnInitDialog();
 };

@@ -136,30 +136,25 @@ void CTexStatic::OnLButtonUp(UINT nFlags, CPoint point)
 void CTexStatic::OnLButtonDblClk(UINT nFlags, CPoint point)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
-	if( m_bSelFlag )
+	for( int i=0; i < (int)m_vecTexStatic.size(); ++i )
 	{
-		m_bSelFlag = FALSE;
+		TexInfo& ti = m_vecTexStatic[i];
 
-		for( int i=0; i < (int)m_vecTexStatic.size(); ++i )
+		CRect rc;
+		rc.left = ti.origin_x;
+		rc.right = rc.left + ti.origin_w;
+		rc.top = ti.origin_y - m_nPos;
+		rc.bottom = rc.top + ti.origin_h;
+
+		if( rc.PtInRect( point ) )
 		{
-			TexInfo& ti = m_vecTexStatic[i];
+			m_nSelIndex = i;
 
-			CRect rc;
-			rc.left = ti.origin_x;
-			rc.right = rc.left + ti.origin_w;
-			rc.top = ti.origin_y - m_nPos;
-			rc.bottom = rc.top + ti.origin_h;
+			Invalidate();
 
-			if( rc.PtInRect( point ) )
-			{
-				m_nSelIndex = i;
+			m_pSelDlg->OnBnClickedOk();
 
-				Invalidate();
-
-				m_pSelDlg->OnBnClickedOk();
-
-				break;
-			}
+			break;
 		}
 	}
 
@@ -240,6 +235,8 @@ int CSelectSurfaceTextureDlg::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		CString strTextureName;
 		GetPrivateProfileString( _T("init"), strKey, _T(""), strTextureName.GetBuffer( MAX_PATH ), MAX_PATH, _T("./Editor/MapBlock.ini") );
 
+		if( strTextureName.Compare( m_strInitSelectedFileName ) == 0 )
+			m_kStatic.m_nSelIndex = i - 1;
 
 		int nX = ( i - 1 ) % nColCount * ( nColWidth + nInterval ) + nOffsetX;
 		int nY = ( i - 1 ) / nColCount * ( nRowHeight + nInterval ) + nOffsetY;
@@ -360,5 +357,3 @@ void CSelectSurfaceTextureDlg::OnLButtonDown(UINT nFlags, CPoint point)
 
 	CDialogEx::OnLButtonDown(nFlags, point);
 }
-
-

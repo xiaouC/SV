@@ -55,6 +55,7 @@ public:
 	CSelectSurfaceTextureDlg(CWnd* pParent = NULL);   // 标准构造函数
 	virtual ~CSelectSurfaceTextureDlg();
 	
+	CString m_strInitSelectedFileName;
 	CString getCurrentSelectedTexFile();
 
 // 对话框数据
@@ -72,6 +73,7 @@ public:
 protected:
 	CScrollBar m_kScrollBar;
 	CTexStatic m_kStatic;
+
 public:
 	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
