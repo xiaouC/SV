@@ -77,6 +77,9 @@ protected:
 	BOOL convertPoint( const CPoint& point, float& ret_x, float& ret_y );
 	void rotatePoint( const CPoint& point );
 
+	BOOL convertPointToSM( const CPoint& point, float& ret_x, float& ret_y );
+	BOOL convertPointToMB( const CPoint& point, float& ret_x, float& ret_y );
+
 	int m_nEditMode;
 
 	// 生成的消息映射函数

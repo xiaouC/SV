@@ -9,6 +9,7 @@
 #include "MainFrm.h"
 #include "CCDirector.h"
 #include "MC/MCLoader.h"
+#include "MC/AssetsManager.h"
 #include "Map/TLMapBlock.h"
 #include "Map/TLSeamlessMap.h"
 
@@ -138,6 +139,12 @@ int CChildView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	{
         CCLog( "error start lua main.lua" );
     }
+
+	AssetsManager::sharedAssetsManager()->addSearchPath( "" );
+    AssetsManager::sharedAssetsManager()->addSearchPath( "images/" );
+    AssetsManager::sharedAssetsManager()->addSearchPath( "mc/" );
+
+	MCLoader::sharedMCLoader()->loadIndexFile( "mc/anim.index", "mc/frames.index" );
 
 	m_pGLView->setDesignResolutionSize( 1024, 768, kResolutionShowAll );
 	pDirector->setDisplayStats( true );
@@ -295,6 +302,22 @@ void CChildView::OnLButtonUp(UINT nFlags, CPoint point)
 	//	rotatePoint( point );
 
 	//m_bDownFlag = FALSE;
+	if( m_nEditMode == EDIT_MODE_SELECT )
+	{
+		if( m_pSMNode != NULL )
+		{
+			float x, y;
+			if( convertPointToSM( point, x, y ) )
+			{
+				m_pEditMapBlock = m_pSMNode->getMapBlock( x, y );
+				if( m_pEditMapBlock != NULL )
+				{
+					convertPointToMB( point, x, y );
+					m_pEditSprite = m_pEditMapBlock->hitSprite( x, y );
+				}
+			}
+		}
+	}
 
 	CWnd::OnLButtonUp(nFlags, point);
 }
@@ -535,4 +558,57 @@ void CChildView::rotatePoint( const CPoint& point )
 		fAngle *= 180.0f / M_PI;
 		m_pEditSprite->setRotation( m_fLastRotation + fAngle );
 	}
+}
+
+BOOL CChildView::convertPointToSM( const CPoint& point, float& ret_x, float& ret_y )
+{
+	if( m_pSMNode == NULL )
+		return FALSE;
+
+	CRect rect;
+	GetWindowRect( &rect );
+
+	float x = ( point.x - rect.Width() * 0.5f ) / m_fMainNodeScale;
+	float y = ( rect.Height() * 0.5f - point.y ) / m_fMainNodeScale;
+
+	float sm_x = 0.0f;
+	float sm_y = 0.0f;
+	m_pSMNode->getPosition( &sm_x, &sm_y );
+
+	ret_x = x - sm_x;
+	ret_y = y - sm_y;
+
+	return TRUE;
+}
+
+BOOL CChildView::convertPointToMB( const CPoint& point, float& ret_x, float& ret_y )
+{
+	if( m_pSMNode == NULL )
+		return FALSE;
+
+	CRect rect;
+	GetWindowRect( &rect );
+
+	float x = ( point.x - rect.Width() * 0.5f ) / m_fMainNodeScale;
+	float y = ( rect.Height() * 0.5f - point.y ) / m_fMainNodeScale;
+
+	float sm_x = 0.0f;
+	float sm_y = 0.0f;
+	m_pSMNode->getPosition( &sm_x, &sm_y );
+
+	float fWorldX = x - sm_x;
+	float fWorldY = y - sm_y;
+
+	TLMapBlock* pMapBlock = m_pSMNode->getMapBlock( fWorldX, fWorldY );
+	if( pMapBlock == NULL )
+		return FALSE;
+
+	float mb_x = 0.0f;
+	float mb_y = 0.0f;
+	pMapBlock->getPosition( &mb_x, &mb_y );
+
+	ret_x = fWorldX - mb_x;
+	ret_y = fWorldY - mb_y;
+
+	return TRUE;
 }

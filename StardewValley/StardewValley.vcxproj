@@ -135,6 +135,7 @@
     <ClInclude Include="ChildView.h" />
     <ClInclude Include="ClassView.h" />
     <ClInclude Include="CreateSeamlessMapDlg.h" />
+    <ClInclude Include="DDEffectDlg.h" />
     <ClInclude Include="FileView.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="MapStyleWnd.h" />
@@ -152,6 +153,7 @@
     <ClCompile Include="ChildView.cpp" />
     <ClCompile Include="ClassView.cpp" />
     <ClCompile Include="CreateSeamlessMapDlg.cpp" />
+    <ClCompile Include="DDEffectDlg.cpp" />
     <ClCompile Include="FileView.cpp" />
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="MapStyleWnd.cpp" />

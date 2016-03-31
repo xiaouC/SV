@@ -381,7 +381,8 @@ void CMapDetail::OnLButtonDown(UINT nFlags, CPoint point)
 	if( !m_strCurrentName.empty() )
 	{
 		CMyDataSource ds( "FlyFly" + m_strCurrentName );
-		ds.DoDragDrop( DROPEFFECT_COPY );
+		CMyDropSource dropSource( m_strCurrentName );
+		ds.DoDragDrop( DROPEFFECT_COPY, NULL, &dropSource );
 	}
 
 	CStatic::OnLButtonDown(nFlags, point);

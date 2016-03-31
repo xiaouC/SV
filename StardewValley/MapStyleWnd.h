@@ -17,6 +17,63 @@ public:
 	}
 };
 
+class CMyDropSource : public COleDropSource
+{
+public:
+	CMyDropSource( const std::string& strFileName )
+	{
+		m_rc.SetRectEmpty();
+
+		CString strPath;
+		strPath.Format( "./Editor/mapStyle/%s", strFileName.c_str() );
+
+		m_pImage = new CImage;
+		m_pImage->Load( strPath );
+	}
+
+	virtual ~CMyDropSource()
+	{
+		::InvalidateRect( GetDesktopWindow(), &m_rc, TRUE );
+
+		delete m_pImage;
+	}
+
+	virtual SCODE QueryContinueDrag( BOOL bEscapePressed, DWORD dwKeyState )
+	{
+		::InvalidateRect( GetDesktopWindow(), &m_rc, TRUE );
+
+		if( bEscapePressed || ( dwKeyState & MK_RBUTTON ) != 0 )
+		{
+			m_bDragStarted = FALSE;
+
+			return DRAGDROP_S_CANCEL;
+		}
+
+		if( ( dwKeyState & MK_LBUTTON ) == 0 )
+			return m_bDragStarted ? DRAGDROP_S_DROP : DRAGDROP_S_CANCEL;
+
+		CPoint point;
+		GetCursorPos( &point );
+
+		m_rc.left = point.x - 2;
+		m_rc.right = m_rc.left + m_pImage->GetWidth() + 4;
+		m_rc.top = point.y - 2;
+		m_rc.bottom = m_rc.top + m_pImage->GetHeight() + 4;
+		
+		HDC hDC = ::GetDC( NULL );
+
+		m_pImage->Draw( hDC, point.x - m_pImage->GetWidth() * 0.5, point.y - m_pImage->GetHeight() * 0.5 );
+
+		ReleaseDC( NULL , hDC );
+
+		return S_OK;
+	}
+
+private:
+	CImage* m_pImage;
+	CRect m_rc;
+};
+
 /////////////////////////////////////////////////////////////////////////////
 // CMapDetail ´°¿Ú
 
