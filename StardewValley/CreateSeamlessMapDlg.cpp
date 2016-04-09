@@ -10,9 +10,7 @@
 #include "ChildView.h"
 
 // CCreateSeamlessMapDlg 对话框
-
 IMPLEMENT_DYNAMIC(CCreateSeamlessMapDlg, CDialogEx)
-
 CCreateSeamlessMapDlg::CCreateSeamlessMapDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CCreateSeamlessMapDlg::IDD, pParent)
 	, m_nBlockRow(32)
@@ -20,8 +18,8 @@ CCreateSeamlessMapDlg::CCreateSeamlessMapDlg(CWnd* pParent /*=NULL*/)
 	, m_nGridWidth(64)
 	, m_nGridHeight(64)
 	, m_strFileName(_T(""))
+	, m_strBlockName(_T(""))
 {
-
 }
 
 CCreateSeamlessMapDlg::~CCreateSeamlessMapDlg()
@@ -36,8 +34,8 @@ void CCreateSeamlessMapDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_WIDTH, m_nGridWidth);
 	DDX_Text(pDX, IDC_EDIT_HEIGHT, m_nGridHeight);
 	DDX_Text(pDX, IDC_EDIT_FILE_NAME, m_strFileName);
+	DDX_Text(pDX, IDC_EDIT_BLOCK_NAME, m_strBlockName);
 }
-
 
 BEGIN_MESSAGE_MAP(CCreateSeamlessMapDlg, CDialogEx)
 	ON_STN_CLICKED(IDC_STATIC_DEFAULT_PNG, &CCreateSeamlessMapDlg::OnStnClickedStaticDefaultPng)
@@ -45,10 +43,7 @@ BEGIN_MESSAGE_MAP(CCreateSeamlessMapDlg, CDialogEx)
 	ON_WM_CREATE()
 END_MESSAGE_MAP()
 
-
 // CCreateSeamlessMapDlg 消息处理程序
-
-
 void CCreateSeamlessMapDlg::OnStnClickedStaticDefaultPng()
 {
 	// TODO: 在此添加控件通知处理程序代码
@@ -71,7 +66,6 @@ void CCreateSeamlessMapDlg::OnStnClickedStaticDefaultPng()
 	}
 }
 
-
 void CCreateSeamlessMapDlg::OnBnClickedOk()
 {
 	// TODO: 在此添加控件通知处理程序代码
@@ -86,7 +80,7 @@ void CCreateSeamlessMapDlg::OnBnClickedOk()
 
 	CString strTemp;
 	strTemp.Format( "./map/%s", m_strFileName );
-	if( TLSeamlessMap::newSeamlessMap( strTemp.GetBuffer(), m_nBlockRow, m_nBlockCol, m_nGridWidth, m_nGridHeight, m_strMaterial.GetBuffer() ) )
+	if( TLSeamlessMap::newSeamlessMap( strTemp.GetBuffer(), m_strBlockName.GetBuffer(), m_nBlockRow, m_nBlockCol, m_nGridWidth, m_nGridHeight, m_strMaterial.GetBuffer() ) )
 	{
 		strTemp.Append( ".sm" );
 
@@ -100,7 +94,6 @@ void CCreateSeamlessMapDlg::OnBnClickedOk()
 	}
 }
 
-
 int CCreateSeamlessMapDlg::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
 	if (CDialogEx::OnCreate(lpCreateStruct) == -1)
@@ -110,7 +103,6 @@ int CCreateSeamlessMapDlg::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	return 0;
 }
-
 
 BOOL CCreateSeamlessMapDlg::OnInitDialog()
 {

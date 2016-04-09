@@ -24,6 +24,7 @@ public:
 	int m_nGridWidth;
 	int m_nGridHeight;
 	CString m_strFileName;
+	CString m_strBlockName;
 	CString m_strMaterial;
 	afx_msg void OnStnClickedStaticDefaultPng();
 	afx_msg void OnBnClickedOk();

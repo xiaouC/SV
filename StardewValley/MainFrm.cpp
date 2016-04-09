@@ -502,11 +502,11 @@ void CMainFrame::openSeamlessMap( const CString& strFileName )
 
 void CMainFrame::OnEditType(UINT id)
 {
-	m_wndView.m_nEditMode = id - ID_TB_SELECT + EDIT_MODE_SELECT;
+//	m_wndView.m_nEditMode = id - ID_TB_SELECT + EDIT_MODE_SELECT;
 }
 
 void CMainFrame::OnUpdateEditType(CCmdUI* pCmdUI)
 {
-	int nEditID = m_wndView.m_nEditMode + ID_TB_SELECT - EDIT_MODE_SELECT;
-	pCmdUI->SetCheck(nEditID == pCmdUI->m_nID);
+//	int nEditID = m_wndView.m_nEditMode + ID_TB_SELECT - EDIT_MODE_SELECT;
+//	pCmdUI->SetCheck(nEditID == pCmdUI->m_nID);
 }

@@ -7,14 +7,6 @@
 #include "CCEGLView.h"
 #include "TLRunningScene.h"
 
-enum EDIT_MODE
-{
-	EDIT_MODE_SELECT,
-	EDIT_MODE_TRANSLATION,
-	EDIT_MODE_ROTATION,
-	EDIT_MODE_SCALE,
-};
-
 class CChildView;
 class CMyDropTarget : public COleDropTarget
 {
@@ -72,15 +64,13 @@ protected:
 
 protected:
 	BOOL m_bDownFlag;
+	BOOL m_bRotationFlag;
+	float m_fLastX, m_fLastY;
 	float m_fLastRotation;
 	float m_fDownX, m_fDownY;
 	BOOL convertPoint( const CPoint& point, float& ret_x, float& ret_y );
-	void rotatePoint( const CPoint& point );
-
 	BOOL convertPointToSM( const CPoint& point, float& ret_x, float& ret_y );
 	BOOL convertPointToMB( const CPoint& point, float& ret_x, float& ret_y );
-
-	int m_nEditMode;
 
 	// 生成的消息映射函数
 protected:

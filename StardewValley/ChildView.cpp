@@ -39,6 +39,28 @@ DROPEFFECT CMyDropTarget::OnDropEx( CWnd* pWnd, COleDataObject* pDO, DROPEFFECT 
 	return DROPEFFECT_NONE;
 }
 
+///////////////////////////////////////////////////////////////////////////
+float vector_dot( ccVertex3F v1, ccVertex3F v2 )
+{
+	return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+}
+
+ccVertex3F vector_cross( ccVertex3F v1, ccVertex3F v2 )
+{
+	ccVertex3F ret_v;
+
+	ret_v.x = v1.y * v2.z - v2.y * v1.z;
+	ret_v.y = v1.z * v2.x - v2.z * v1.x;
+	ret_v.z = v1.x * v2.y - v2.x * v1.y;
+
+	return ret_v;
+}
+
+float vector_distance( ccVertex3F v1, ccVertex3F v2 )
+{
+	return sqrt( ( v1.x * v1.x + v1.y * v1.y + v1.z * v1.z ) * ( v2.x * v2.x + v2.y * v2.y + v2.z * v2.z ) );
+}
+
 // CChildView
 CChildView::CChildView()
 {
@@ -51,10 +73,13 @@ CChildView::CChildView()
 	m_pEditMapBlock = NULL;
 	m_pEditSprite = NULL;
 
+	m_bDownFlag = FALSE;
+	m_bRotationFlag = FALSE;
+	m_fLastX = 0.0f;
+	m_fLastY = 0.0f;
+	m_fLastRotation = 0.0f;
 	m_fDownX = 0.0f;
 	m_fDownY = 0.0f;
-
-	m_nEditMode = EDIT_MODE_SELECT;
 }
 
 CChildView::~CChildView()
@@ -284,11 +309,13 @@ void CChildView::OnLButtonDown(UINT nFlags, CPoint point)
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
 	SetFocus();
 
-	//m_bDownFlag = TRUE;
-	//if( convertPoint( point, m_fDownX, m_fDownY ) )
-	//{
-	//	m_fLastRotation = m_pEditSprite->getRotation();
-	//}
+	m_bDownFlag = TRUE;
+	if( convertPoint( point, m_fDownX, m_fDownY ) )
+	{
+		m_fLastX = m_pEditSprite->getPositionX();
+		m_fLastY = m_pEditSprite->getPositionY();
+		m_fLastRotation = m_pEditSprite->getRotation();
+	}
 
 	CWnd::OnLButtonDown(nFlags, point);
 }
@@ -298,25 +325,27 @@ const float g_fSelectedHeight = 100.0f;
 void CChildView::OnLButtonUp(UINT nFlags, CPoint point)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
-	//if( m_bDownFlag && ( nFlags & MK_CONTROL ) )
-	//	rotatePoint( point );
-
-	//m_bDownFlag = FALSE;
-	if( m_nEditMode == EDIT_MODE_SELECT )
+	m_bDownFlag = FALSE;
+	if( !m_bRotationFlag && m_pSMNode != NULL )
 	{
-		if( m_pSMNode != NULL )
+		float x, y;
+		if( convertPointToSM( point, x, y ) )
 		{
-			float x, y;
-			if( convertPointToSM( point, x, y ) )
+			m_pEditMapBlock = m_pSMNode->getMapBlock( x, y );
+			if( m_pEditMapBlock != NULL )
 			{
-				m_pEditMapBlock = m_pSMNode->getMapBlock( x, y );
-				if( m_pEditMapBlock != NULL )
-				{
-					convertPointToMB( point, x, y );
-					m_pEditSprite = m_pEditMapBlock->hitSprite( x, y );
-				}
+				convertPointToMB( point, x, y );
+				m_pEditSprite = m_pEditMapBlock->hitSprite( x, y );
 			}
 		}
+	}
+
+	if( m_bRotationFlag )
+	{
+		if( m_pEditMapBlock != NULL && m_pEditSprite != NULL )
+			m_pEditMapBlock->rotateSprite( m_pEditSprite, m_pEditSprite->getRotation() );
+
+		m_bRotationFlag = FALSE;
 	}
 
 	CWnd::OnLButtonUp(nFlags, point);
@@ -325,12 +354,38 @@ void CChildView::OnLButtonUp(UINT nFlags, CPoint point)
 void CChildView::OnMouseMove(UINT nFlags, CPoint point)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
-	//if( m_bDownFlag && ( nFlags & MK_CONTROL ) )
-	//	rotatePoint( point );
+	if( m_bDownFlag && ( nFlags & MK_CONTROL ) )
+	{
+		float fMoveX, fMoveY;
+		if( convertPoint( point, fMoveX, fMoveY ) )
+		{
+			ccVertex3F v1;
+			v1.x = m_fDownX - m_fLastX;
+			v1.y = m_fDownY - m_fLastY;
+			v1.z = 0.0f;
+
+			ccVertex3F v2;
+			v2.x = fMoveX - m_fLastX;
+			v2.y = fMoveY - m_fLastY;
+			v2.z = 0.0f;
+
+			float fDot = vector_dot( v1, v2 );
+			ccVertex3F vCross = vector_cross( v1, v2 );
+			float fDis = vector_distance( v1, v2 );
+
+			float angle = acos( fDot / fDis ) * 180.0 / M_PI;
+
+			if( vCross.z > 0 )
+				m_pEditSprite->setRotation( -angle );
+			else
+				m_pEditSprite->setRotation( angle );
+
+			m_bRotationFlag = TRUE;
+		}
+	}
 
 	CWnd::OnMouseMove(nFlags, point);
 }
-
 
 BOOL CChildView::PreTranslateMessage(MSG* pMsg)
 {
@@ -341,122 +396,33 @@ BOOL CChildView::PreTranslateMessage(MSG* pMsg)
 	return CWnd::PreTranslateMessage(pMsg);
 }
 
-
 void CChildView::OnChildViewUp()
 {
 	// TODO: 在此添加命令处理程序代码
-	switch( m_nEditMode )
-	{
-	case EDIT_MODE_SELECT:
-		break;
-	case EDIT_MODE_TRANSLATION:
-		if( m_pEditMapBlock != NULL )
-		{
-			m_pEditMapBlock->moveSprite( m_pEditSprite, 0.0f, 1.0f );
-		}
-		break;
-	//case EDIT_MODE_ROTATION:
-	//	if( m_pEditMapBlock != NULL )
-	//	{
-	//		m_pEditMapBlock->rotateSprite( m_pEditSprite, 1.0f );
-	//	}
-	//	break;
-	//case EDIT_MODE_SCALE:
-	//	if( m_pEditMapBlock != NULL )
-	//	{
-	//		m_pEditMapBlock->scaleSprite( m_pEditSprite, 1.1f );
-	//	}
-	//	break;
-	}
+	if( m_pEditMapBlock != NULL && m_pEditSprite != NULL )
+		m_pEditMapBlock->moveSprite( m_pEditSprite, 0.0f, 1.0f );
 }
-
 
 void CChildView::OnChildViewDown()
 {
 	// TODO: 在此添加命令处理程序代码
-	switch( m_nEditMode )
-	{
-	case EDIT_MODE_SELECT:
-		break;
-	case EDIT_MODE_TRANSLATION:
-		if( m_pEditMapBlock != NULL )
-		{
-			m_pEditMapBlock->moveSprite( m_pEditSprite, 0.0f, -1.0f );
-		}
-		break;
-	//case EDIT_MODE_ROTATION:
-	//	if( m_pEditMapBlock != NULL )
-	//	{
-	//		m_pEditMapBlock->rotateSprite( m_pEditSprite, 1.0f );
-	//	}
-	//	break;
-	//case EDIT_MODE_SCALE:
-	//	if( m_pEditMapBlock != NULL )
-	//	{
-	//		m_pEditMapBlock->scaleSprite( m_pEditSprite, 1.1f );
-	//	}
-	//	break;
-	}
+	if( m_pEditMapBlock != NULL && m_pEditSprite != NULL )
+		m_pEditMapBlock->moveSprite( m_pEditSprite, 0.0f, -1.0f );
 }
-
 
 void CChildView::OnChildViewLeft()
 {
 	// TODO: 在此添加命令处理程序代码
-	switch( m_nEditMode )
-	{
-	case EDIT_MODE_SELECT:
-		break;
-	case EDIT_MODE_TRANSLATION:
-		if( m_pEditMapBlock != NULL )
-		{
-			m_pEditMapBlock->moveSprite( m_pEditSprite, -1.0f, 0.0f );
-		}
-		break;
-	case EDIT_MODE_ROTATION:
-		if( m_pEditMapBlock != NULL )
-		{
-			m_pEditMapBlock->rotateSprite( m_pEditSprite, 1.0f );
-		}
-		break;
-	//case EDIT_MODE_SCALE:
-	//	if( m_pEditMapBlock != NULL )
-	//	{
-	//		m_pEditMapBlock->scaleSprite( m_pEditSprite, 1.1f );
-	//	}
-	//	break;
-	}
+	if( m_pEditMapBlock != NULL && m_pEditSprite != NULL )
+		m_pEditMapBlock->moveSprite( m_pEditSprite, -1.0f, 0.0f );
 }
-
 
 void CChildView::OnChildViewRight()
 {
 	// TODO: 在此添加命令处理程序代码
-	switch( m_nEditMode )
-	{
-	case EDIT_MODE_SELECT:
-		break;
-	case EDIT_MODE_TRANSLATION:
-		if( m_pEditMapBlock != NULL )
-		{
-			m_pEditMapBlock->moveSprite( m_pEditSprite, 1.0f, 0.0f );
-		}
-		break;
-	case EDIT_MODE_ROTATION:
-		if( m_pEditMapBlock != NULL )
-		{
-			m_pEditMapBlock->rotateSprite( m_pEditSprite, -1.0f );
-		}
-		break;
-	//case EDIT_MODE_SCALE:
-	//	if( m_pEditMapBlock != NULL )
-	//	{
-	//		m_pEditMapBlock->scaleSprite( m_pEditSprite, 1.1f );
-	//	}
-	//	break;
-	}
+	if( m_pEditMapBlock != NULL && m_pEditSprite != NULL )
+		m_pEditMapBlock->moveSprite( m_pEditSprite, 1.0f, 0.0f );
 }
-
 
 void CChildView::OnChildViewDelete()
 {
@@ -471,7 +437,7 @@ void CChildView::OnMouseHWheel(UINT nFlags, short zDelta, CPoint pt)
 {
 	if( zDelta > 0 )
 	{
-		if( m_nEditMode == EDIT_MODE_SCALE )
+		if( nFlags & MK_CONTROL )
 		{
 			m_pEditMapBlock->scaleSprite( m_pEditSprite, 1.1f );
 		}
@@ -483,7 +449,7 @@ void CChildView::OnMouseHWheel(UINT nFlags, short zDelta, CPoint pt)
 	}
 	else
 	{
-		if( m_nEditMode == EDIT_MODE_SCALE )
+		if( nFlags & MK_CONTROL )
 		{
 			m_pEditMapBlock->scaleSprite( m_pEditSprite, 0.9f );
 		}
@@ -521,43 +487,6 @@ BOOL CChildView::convertPoint( const CPoint& point, float& ret_x, float& ret_y )
 	ret_y = fWorldY - mb_y;
 
 	return TRUE;
-}
-
-void CChildView::rotatePoint( const CPoint& point )
-{
-	float x = 0.0f, y = 0.0f;
-	if( convertPoint( point, x, y ) )
-	{
-		float sx, sy;
-		m_pEditSprite->getPosition( &sx, &sy );
-
-		// Vector3 u( u1, u2, u3 )
-		float u1 = m_fDownX - sx;
-		float u2 = m_fDownY - sy;
-		float u3 = 0.0f;
-
-		// Vector3 v( v1, v2, v3 )
-		float v1 = x - sx;
-		float v2 = y - sy;
-		float v3 = 0.0f;
-
-		// u.cross( v )
-		float cross_x = u2 * v3 - v2 * u3;
-		float cross_y = u3 * v1 - v3 * u1;
-		float cross_z = u1 * v2 - u2 * v1;
-
-		float fAngle = abs( acos( ( u1 * v2 + u2 * v2 ) / sqrt( ( u1 * u1 + u2 * u2 ) * ( v1 * v1 + v2 * v2 ) ) ) );
-
-		char chBuf[64];
-		sprintf( chBuf, "%f\n", fAngle );
-		OutputDebugString( chBuf );
-
-		if( cross_z > 0.0f )
-			fAngle = -fAngle;
-
-		fAngle *= 180.0f / M_PI;
-		m_pEditSprite->setRotation( m_fLastRotation + fAngle );
-	}
 }
 
 BOOL CChildView::convertPointToSM( const CPoint& point, float& ret_x, float& ret_y )
