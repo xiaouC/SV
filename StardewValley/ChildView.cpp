@@ -71,7 +71,7 @@ CChildView::CChildView()
 	m_pMainScaleNode = NULL;
 	m_pSMNode = NULL;
 	m_pEditMapBlock = NULL;
-	m_pEditSprite = NULL;
+	m_pEditNode = NULL;
 
 	m_bDownFlag = FALSE;
 	m_bRotationFlag = FALSE;
@@ -247,12 +247,12 @@ BOOL CChildView::addSpriteByDrop( COleDataObject* pDataObject, CPoint pt, BOOL b
 				pMapBlock->getPosition( &mb_x, &mb_y );
 				float fLocalX = fWorldX - mb_x;
 				float fLocalY = fWorldY - mb_y;
-				CCSprite* pSprite = pMapBlock->addSprite( strData, fLocalX, fLocalY );
+				CCNode* pSprite = pMapBlock->addSprite( strData, fLocalX, fLocalY );
 				if( pSprite == NULL )
 					return FALSE;
 
 				m_pEditMapBlock = pMapBlock;
-				m_pEditSprite = pSprite;
+				m_pEditNode = pSprite;
 			}
 
 			return TRUE;
@@ -310,11 +310,35 @@ void CChildView::OnLButtonDown(UINT nFlags, CPoint point)
 	SetFocus();
 
 	m_bDownFlag = TRUE;
-	if( convertPoint( point, m_fDownX, m_fDownY ) )
+	m_kLastPoint = point;
+
+	// 旋转
+	if( ( nFlags & MK_CONTROL ) && convertPoint( point, m_fDownX, m_fDownY ) )
 	{
-		m_fLastX = m_pEditSprite->getPositionX();
-		m_fLastY = m_pEditSprite->getPositionY();
-		m_fLastRotation = m_pEditSprite->getRotation();
+		m_bRotationFlag = TRUE;
+
+		m_fLastX = m_pEditNode->getPositionX();
+		m_fLastY = m_pEditNode->getPositionY();
+		m_fLastRotation = m_pEditNode->getRotation();
+	}
+	else if( nFlags & MK_SHIFT )///////// 平移大地图
+	{
+	}
+	else///////////////////////////////// 选中物件
+	{
+		if( m_pSMNode != NULL )
+		{
+			float x, y;
+			if( convertPointToSM( point, x, y ) )
+			{
+				m_pEditMapBlock = m_pSMNode->getMapBlock( x, y );
+				if( m_pEditMapBlock != NULL )
+				{
+					convertPointToMB( point, x, y );
+					m_pEditNode = m_pEditMapBlock->hitSprite( x, y );
+				}
+			}
+		}
 	}
 
 	CWnd::OnLButtonDown(nFlags, point);
@@ -326,24 +350,11 @@ void CChildView::OnLButtonUp(UINT nFlags, CPoint point)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
 	m_bDownFlag = FALSE;
-	if( !m_bRotationFlag && m_pSMNode != NULL )
-	{
-		float x, y;
-		if( convertPointToSM( point, x, y ) )
-		{
-			m_pEditMapBlock = m_pSMNode->getMapBlock( x, y );
-			if( m_pEditMapBlock != NULL )
-			{
-				convertPointToMB( point, x, y );
-				m_pEditSprite = m_pEditMapBlock->hitSprite( x, y );
-			}
-		}
-	}
 
 	if( m_bRotationFlag )
 	{
-		if( m_pEditMapBlock != NULL && m_pEditSprite != NULL )
-			m_pEditMapBlock->rotateSprite( m_pEditSprite, m_pEditSprite->getRotation() );
+		if( m_pEditMapBlock != NULL && m_pEditNode != NULL )
+			m_pEditMapBlock->rotateObject( m_pEditNode, m_pEditNode->getRotation() );
 
 		m_bRotationFlag = FALSE;
 	}
@@ -354,33 +365,46 @@ void CChildView::OnLButtonUp(UINT nFlags, CPoint point)
 void CChildView::OnMouseMove(UINT nFlags, CPoint point)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
-	if( m_bDownFlag && ( nFlags & MK_CONTROL ) )
+	if( m_bRotationFlag )
 	{
-		float fMoveX, fMoveY;
-		if( convertPoint( point, fMoveX, fMoveY ) )
+		if( nFlags & MK_CONTROL )
 		{
-			ccVertex3F v1;
-			v1.x = m_fDownX - m_fLastX;
-			v1.y = m_fDownY - m_fLastY;
-			v1.z = 0.0f;
+			float fMoveX, fMoveY;
+			if( convertPoint( point, fMoveX, fMoveY ) )
+			{
+				ccVertex3F v1;
+				v1.x = m_fDownX - m_fLastX;
+				v1.y = m_fDownY - m_fLastY;
+				v1.z = 0.0f;
 
-			ccVertex3F v2;
-			v2.x = fMoveX - m_fLastX;
-			v2.y = fMoveY - m_fLastY;
-			v2.z = 0.0f;
+				ccVertex3F v2;
+				v2.x = fMoveX - m_fLastX;
+				v2.y = fMoveY - m_fLastY;
+				v2.z = 0.0f;
 
-			float fDot = vector_dot( v1, v2 );
-			ccVertex3F vCross = vector_cross( v1, v2 );
-			float fDis = vector_distance( v1, v2 );
+				float fDot = vector_dot( v1, v2 );
+				ccVertex3F vCross = vector_cross( v1, v2 );
+				float fDis = vector_distance( v1, v2 );
 
-			float angle = acos( fDot / fDis ) * 180.0 / M_PI;
+				float angle = acos( fDot / fDis ) * 180.0f / M_PI;
 
-			if( vCross.z > 0 )
-				m_pEditSprite->setRotation( -angle );
-			else
-				m_pEditSprite->setRotation( angle );
+				if( vCross.z > 0 )
+					m_pEditNode->setRotation( m_fLastRotation - angle );
+				else
+					m_pEditNode->setRotation( m_fLastRotation + angle );
+		}
+		}
+	}
+	else
+	{
+		if( m_bDownFlag && m_pEditMapBlock != NULL && m_pEditNode != NULL )
+		{
+			float fOffsetX = point.x - m_kLastPoint.x;
+			float fOffsetY = point.y - m_kLastPoint.y;
 
-			m_bRotationFlag = TRUE;
+			m_kLastPoint = point;
+
+			m_pEditMapBlock->moveObject( m_pEditNode, fOffsetX, -fOffsetY );
 		}
 	}
 
@@ -399,38 +423,36 @@ BOOL CChildView::PreTranslateMessage(MSG* pMsg)
 void CChildView::OnChildViewUp()
 {
 	// TODO: 在此添加命令处理程序代码
-	if( m_pEditMapBlock != NULL && m_pEditSprite != NULL )
-		m_pEditMapBlock->moveSprite( m_pEditSprite, 0.0f, 1.0f );
+	if( m_pEditMapBlock != NULL && m_pEditNode != NULL )
+		m_pEditMapBlock->moveObject( m_pEditNode, 0.0f, 1.0f );
 }
 
 void CChildView::OnChildViewDown()
 {
 	// TODO: 在此添加命令处理程序代码
-	if( m_pEditMapBlock != NULL && m_pEditSprite != NULL )
-		m_pEditMapBlock->moveSprite( m_pEditSprite, 0.0f, -1.0f );
+	if( m_pEditMapBlock != NULL && m_pEditNode != NULL )
+		m_pEditMapBlock->moveObject( m_pEditNode, 0.0f, -1.0f );
 }
 
 void CChildView::OnChildViewLeft()
 {
 	// TODO: 在此添加命令处理程序代码
-	if( m_pEditMapBlock != NULL && m_pEditSprite != NULL )
-		m_pEditMapBlock->moveSprite( m_pEditSprite, -1.0f, 0.0f );
+	if( m_pEditMapBlock != NULL && m_pEditNode != NULL )
+		m_pEditMapBlock->moveObject( m_pEditNode, -1.0f, 0.0f );
 }
 
 void CChildView::OnChildViewRight()
 {
 	// TODO: 在此添加命令处理程序代码
-	if( m_pEditMapBlock != NULL && m_pEditSprite != NULL )
-		m_pEditMapBlock->moveSprite( m_pEditSprite, 1.0f, 0.0f );
+	if( m_pEditMapBlock != NULL && m_pEditNode != NULL )
+		m_pEditMapBlock->moveObject( m_pEditNode, 1.0f, 0.0f );
 }
 
 void CChildView::OnChildViewDelete()
 {
 	// TODO: 在此添加命令处理程序代码
-	if( m_pEditSprite != NULL )
-	{
-		m_pEditMapBlock->removeSprite( m_pEditSprite );
-	}
+	if( m_pEditNode != NULL )
+		m_pEditMapBlock->removeObject( m_pEditNode );
 }
 
 void CChildView::OnMouseHWheel(UINT nFlags, short zDelta, CPoint pt)
@@ -439,7 +461,7 @@ void CChildView::OnMouseHWheel(UINT nFlags, short zDelta, CPoint pt)
 	{
 		if( nFlags & MK_CONTROL )
 		{
-			m_pEditMapBlock->scaleSprite( m_pEditSprite, 1.1f );
+			m_pEditMapBlock->scaleObject( m_pEditNode, 1.1f );
 		}
 		else
 		{
@@ -451,7 +473,7 @@ void CChildView::OnMouseHWheel(UINT nFlags, short zDelta, CPoint pt)
 	{
 		if( nFlags & MK_CONTROL )
 		{
-			m_pEditMapBlock->scaleSprite( m_pEditSprite, 0.9f );
+			m_pEditMapBlock->scaleObject( m_pEditNode, 0.9f );
 		}
 		else
 		{
@@ -463,7 +485,7 @@ void CChildView::OnMouseHWheel(UINT nFlags, short zDelta, CPoint pt)
 
 BOOL CChildView::convertPoint( const CPoint& point, float& ret_x, float& ret_y )
 {
-	if( m_pEditMapBlock == NULL || m_pEditSprite == NULL )
+	if( m_pEditMapBlock == NULL || m_pEditNode == NULL )
 		return FALSE;
 
 	CRect rect;
@@ -540,4 +562,23 @@ BOOL CChildView::convertPointToMB( const CPoint& point, float& ret_x, float& ret
 	ret_y = fWorldY - mb_y;
 
 	return TRUE;
+}
+
+cocos2d::CCNode* CChildView::hitModelSprite( UINT nFlags, const CPoint& point )
+{
+	if( m_pSMNode != NULL )
+	{
+		float x, y;
+		if( convertPointToSM( point, x, y ) )
+		{
+			TLMapBlock* pkMapBlock = m_pSMNode->getMapBlock( x, y );
+			if( pkMapBlock != NULL )
+			{
+				convertPointToMB( point, x, y );
+				return pkMapBlock->hitSprite( x, y );
+			}
+		}
+	}
+
+	return NULL;
 }

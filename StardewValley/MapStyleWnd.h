@@ -62,7 +62,7 @@ public:
 		
 		HDC hDC = ::GetDC( NULL );
 
-		m_pImage->Draw( hDC, point.x - m_pImage->GetWidth() * 0.5, point.y - m_pImage->GetHeight() * 0.5 );
+		m_pImage->Draw( hDC, point.x - (int)( m_pImage->GetWidth() * 0.5 ), point.y - (int)( m_pImage->GetHeight() * 0.5 ) );
 
 		ReleaseDC( NULL , hDC );
 

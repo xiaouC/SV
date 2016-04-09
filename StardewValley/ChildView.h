@@ -56,7 +56,7 @@ protected:
 
 	TLSeamlessMap* m_pSMNode;
 	TLMapBlock* m_pEditMapBlock;
-	cocos2d::CCSprite* m_pEditSprite;
+	cocos2d::CCNode* m_pEditNode;
 
 	CMyDropTarget m_kOleTarget;
 
@@ -64,13 +64,20 @@ protected:
 
 protected:
 	BOOL m_bDownFlag;
+	CPoint m_kLastPoint;
+
 	BOOL m_bRotationFlag;
 	float m_fLastX, m_fLastY;
 	float m_fLastRotation;
 	float m_fDownX, m_fDownY;
+
 	BOOL convertPoint( const CPoint& point, float& ret_x, float& ret_y );
 	BOOL convertPointToSM( const CPoint& point, float& ret_x, float& ret_y );
 	BOOL convertPointToMB( const CPoint& point, float& ret_x, float& ret_y );
+
+	cocos2d::CCNode* hitModelSprite( UINT nFlags, const CPoint& point );
+
+	cocos2d::CCNode* m_pkDownHitNode;
 
 	// 生成的消息映射函数
 protected:
