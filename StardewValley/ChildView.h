@@ -64,6 +64,7 @@ protected:
 
 protected:
 	BOOL m_bDownFlag;
+	BOOL m_bMoveSMFlag;
 	CPoint m_kLastPoint;
 
 	BOOL m_bRotationFlag;
@@ -74,10 +75,6 @@ protected:
 	BOOL convertPoint( const CPoint& point, float& ret_x, float& ret_y );
 	BOOL convertPointToSM( const CPoint& point, float& ret_x, float& ret_y );
 	BOOL convertPointToMB( const CPoint& point, float& ret_x, float& ret_y );
-
-	cocos2d::CCNode* hitModelSprite( UINT nFlags, const CPoint& point );
-
-	cocos2d::CCNode* m_pkDownHitNode;
 
 	// 生成的消息映射函数
 protected:

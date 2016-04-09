@@ -74,6 +74,10 @@ CChildView::CChildView()
 	m_pEditNode = NULL;
 
 	m_bDownFlag = FALSE;
+	m_bMoveSMFlag = FALSE;
+	m_kLastPoint.x = 0;
+	m_kLastPoint.y = 0;
+
 	m_bRotationFlag = FALSE;
 	m_fLastX = 0.0f;
 	m_fLastY = 0.0f;
@@ -302,6 +306,8 @@ void CChildView::OnSaveSm()
 	// TODO: 在此添加命令处理程序代码
 	if( m_pSMNode != NULL )
 		m_pSMNode->save();
+
+	AfxMessageBox( _T("保存成功!"), MB_OK );
 }
 
 void CChildView::OnLButtonDown(UINT nFlags, CPoint point)
@@ -323,6 +329,8 @@ void CChildView::OnLButtonDown(UINT nFlags, CPoint point)
 	}
 	else if( nFlags & MK_SHIFT )///////// 平移大地图
 	{
+		if( m_pSMNode != NULL )
+			m_bMoveSMFlag = TRUE;
 	}
 	else///////////////////////////////// 选中物件
 	{
@@ -350,6 +358,7 @@ void CChildView::OnLButtonUp(UINT nFlags, CPoint point)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
 	m_bDownFlag = FALSE;
+	m_bMoveSMFlag = FALSE;
 
 	if( m_bRotationFlag )
 	{
@@ -393,6 +402,19 @@ void CChildView::OnMouseMove(UINT nFlags, CPoint point)
 				else
 					m_pEditNode->setRotation( m_fLastRotation + angle );
 		}
+		}
+	}
+	else if( m_bMoveSMFlag )
+	{
+		if( ( nFlags & MK_SHIFT ) && m_pSMNode != NULL )
+		{
+			float fOffsetX = ( point.x - m_kLastPoint.x ) / m_fMainNodeScale;
+			float fOffsetY = ( point.y - m_kLastPoint.y ) / m_fMainNodeScale;
+
+			m_kLastPoint = point;
+
+			m_pSMNode->setPositionX( m_pSMNode->getPositionX() + fOffsetX );
+			m_pSMNode->setPositionY( m_pSMNode->getPositionY() - fOffsetY );
 		}
 	}
 	else
@@ -562,23 +584,4 @@ BOOL CChildView::convertPointToMB( const CPoint& point, float& ret_x, float& ret
 	ret_y = fWorldY - mb_y;
 
 	return TRUE;
-}
-
-cocos2d::CCNode* CChildView::hitModelSprite( UINT nFlags, const CPoint& point )
-{
-	if( m_pSMNode != NULL )
-	{
-		float x, y;
-		if( convertPointToSM( point, x, y ) )
-		{
-			TLMapBlock* pkMapBlock = m_pSMNode->getMapBlock( x, y );
-			if( pkMapBlock != NULL )
-			{
-				convertPointToMB( point, x, y );
-				return pkMapBlock->hitSprite( x, y );
-			}
-		}
-	}
-
-	return NULL;
 }
