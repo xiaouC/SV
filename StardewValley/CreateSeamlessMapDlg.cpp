@@ -15,10 +15,11 @@ CCreateSeamlessMapDlg::CCreateSeamlessMapDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CCreateSeamlessMapDlg::IDD, pParent)
 	, m_nBlockRow(32)
 	, m_nBlockCol(32)
-	, m_nGridWidth(64)
-	, m_nGridHeight(64)
+	, m_nGridWidth(32)
+	, m_nGridHeight(32)
 	, m_strFileName(_T(""))
 	, m_strBlockName(_T(""))
+	, m_strMaterial(_T(""))
 {
 }
 

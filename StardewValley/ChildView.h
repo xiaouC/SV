@@ -76,6 +76,9 @@ protected:
 	BOOL convertPointToSM( const CPoint& point, float& ret_x, float& ret_y );
 	BOOL convertPointToMB( const CPoint& point, float& ret_x, float& ret_y );
 
+protected:
+	float m_fNewBlockX, m_fNewBlockY;
+
 	// 生成的消息映射函数
 protected:
 	afx_msg void OnPaint();
@@ -96,5 +99,7 @@ public:
 	afx_msg void OnChildViewRight();
 	afx_msg void OnChildViewDelete();
 	afx_msg void OnMouseHWheel(UINT nFlags, short zDelta, CPoint pt);
+	afx_msg void OnContextMenu(CWnd* /*pWnd*/, CPoint /*point*/);
+	afx_msg void OnSeamlessmapNewblock();
 };
 

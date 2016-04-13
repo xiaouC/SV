@@ -1,5 +1,5 @@
-
-// ChildView.cpp : CChildView ÀàµÄÊµÏÖ
+ï»¿
+// ChildView.cpp : CChildView ç±»çš„å®žçŽ°
 //
 
 #include "stdafx.h"
@@ -12,6 +12,7 @@
 #include "MC/AssetsManager.h"
 #include "Map/TLMapBlock.h"
 #include "Map/TLSeamlessMap.h"
+#include "NewMapBlockDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -105,9 +106,11 @@ BEGIN_MESSAGE_MAP(CChildView, CWnd)
 	ON_COMMAND(ID_CHILD_VIEW_LEFT, &CChildView::OnChildViewLeft)
 	ON_COMMAND(ID_CHILD_VIEW_RIGHT, &CChildView::OnChildViewRight)
 	ON_COMMAND(ID_CHILD_VIEW_DELETE, &CChildView::OnChildViewDelete)
+	ON_WM_CONTEXTMENU()
+	ON_COMMAND(ID_SEAMLESSMAP_NEWBLOCK, &CChildView::OnSeamlessmapNewblock)
 END_MESSAGE_MAP()
 
-// CChildView ÏûÏ¢´¦Àí³ÌÐò
+// CChildView æ¶ˆæ¯å¤„ç†ç¨‹åº
 BOOL CChildView::PreCreateWindow(CREATESTRUCT& cs) 
 {
 	if (!CWnd::PreCreateWindow(cs))
@@ -123,18 +126,18 @@ BOOL CChildView::PreCreateWindow(CREATESTRUCT& cs)
 
 void CChildView::OnPaint() 
 {
-	CPaintDC dc(this); // ÓÃÓÚ»æÖÆµÄÉè±¸ÉÏÏÂÎÄ
+	CPaintDC dc(this); // ç”¨äºŽç»˜åˆ¶çš„è®¾å¤‡ä¸Šä¸‹æ–‡
 	
-	// TODO: ÔÚ´Ë´¦Ìí¼ÓÏûÏ¢´¦Àí³ÌÐò´úÂë
+	// TODO: åœ¨æ­¤å¤„æ·»åŠ æ¶ˆæ¯å¤„ç†ç¨‹åºä»£ç 
 	
-	// ²»ÒªÎª»æÖÆÏûÏ¢¶øµ÷ÓÃ CWnd::OnPaint()
+	// ä¸è¦ä¸ºç»˜åˆ¶æ¶ˆæ¯è€Œè°ƒç”¨ CWnd::OnPaint()
 }
 
 void CChildView::OnSize(UINT nType, int cx, int cy)
 {
 	CWnd::OnSize(nType, cx, cy);
 
-	// TODO: ÔÚ´Ë´¦Ìí¼ÓÏûÏ¢´¦Àí³ÌÐò´úÂë
+	// TODO: åœ¨æ­¤å¤„æ·»åŠ æ¶ˆæ¯å¤„ç†ç¨‹åºä»£ç 
 	if( m_pGLView != NULL )
 	{
 		m_pGLView->setFrameSize( cx, cy );
@@ -151,7 +154,7 @@ int CChildView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CWnd::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
-	// TODO:  ÔÚ´ËÌí¼ÓÄú×¨ÓÃµÄ´´½¨´úÂë
+	// TODO:  åœ¨æ­¤æ·»åŠ æ‚¨ä¸“ç”¨çš„åˆ›å»ºä»£ç 
 	m_hAccel = ::LoadAccelerators( AfxGetInstanceHandle(), MAKEINTRESOURCE( IDR_CHILD_VIEW ) );
 
 	m_kOleTarget.m_pChildView = this;
@@ -192,7 +195,7 @@ void CChildView::OnDestroy()
 {
 	CWnd::OnDestroy();
 
-	// TODO: ÔÚ´Ë´¦Ìí¼ÓÏûÏ¢´¦Àí³ÌÐò´úÂë
+	// TODO: åœ¨æ­¤å¤„æ·»åŠ æ¶ˆæ¯å¤„ç†ç¨‹åºä»£ç 
 	if( m_pAppDelegate != NULL )
 	{
 		CCDirector::sharedDirector()->end();
@@ -211,7 +214,7 @@ BOOL CChildView::addSpriteByDrop( COleDataObject* pDataObject, CPoint pt, BOOL b
 {
 	if( m_pSMNode == NULL )
 	{
-		//AfxMessageBox( _T("ÇëÏÈ´ò¿ªµØÍ¼£¡"), MB_OK );
+		//AfxMessageBox( _T("è¯·å…ˆæ‰“å¼€åœ°å›¾ï¼"), MB_OK );
 
 		return FALSE;
 	}
@@ -268,14 +271,14 @@ BOOL CChildView::addSpriteByDrop( COleDataObject* pDataObject, CPoint pt, BOOL b
 
 void CChildView::OnOpenSm()
 {
-	// TODO: ÔÚ´ËÌí¼ÓÃüÁî´¦Àí³ÌÐò´úÂë 
+	// TODO: åœ¨æ­¤æ·»åŠ å‘½ä»¤å¤„ç†ç¨‹åºä»£ç  
 	char chFileName[MAX_PATH];   
 	GetCurrentDirectory( MAX_PATH, chFileName); 
 
 	CString strDir;
 	strDir.Format( "%s/map/", chFileName );
 
-	TCHAR szFilter[] = _T("µØÍ¼ÎÄ¼þ(*.sm)|*.sm|ËùÓÐÎÄ¼þ(*.*)|*.*||"); 
+	TCHAR szFilter[] = _T("åœ°å›¾æ–‡ä»¶(*.sm)|*.sm|æ‰€æœ‰æ–‡ä»¶(*.*)|*.*||"); 
     CFileDialog openFileDlg( TRUE, _T("sm"), NULL, OFN_HIDEREADONLY | OFN_READONLY | OFN_NOCHANGEDIR, szFilter, this );  
     openFileDlg.GetOFN().lpstrInitialDir = strDir;  
     if( openFileDlg.DoModal() == IDOK ) {  
@@ -303,22 +306,22 @@ void CChildView::openSeamlessMap( CString strFileName )
 
 void CChildView::OnSaveSm()
 {
-	// TODO: ÔÚ´ËÌí¼ÓÃüÁî´¦Àí³ÌÐò´úÂë
+	// TODO: åœ¨æ­¤æ·»åŠ å‘½ä»¤å¤„ç†ç¨‹åºä»£ç 
 	if( m_pSMNode != NULL )
 		m_pSMNode->save();
 
-	AfxMessageBox( _T("±£´æ³É¹¦!"), MB_OK );
+	AfxMessageBox( _T("ä¿å­˜æˆåŠŸ!"), MB_OK );
 }
 
 void CChildView::OnLButtonDown(UINT nFlags, CPoint point)
 {
-	// TODO: ÔÚ´ËÌí¼ÓÏûÏ¢´¦Àí³ÌÐò´úÂëºÍ/»òµ÷ÓÃÄ¬ÈÏÖµ
+	// TODO: åœ¨æ­¤æ·»åŠ æ¶ˆæ¯å¤„ç†ç¨‹åºä»£ç å’Œ/æˆ–è°ƒç”¨é»˜è®¤å€¼
 	SetFocus();
 
 	m_bDownFlag = TRUE;
 	m_kLastPoint = point;
 
-	// Ðý×ª
+	// æ—‹è½¬
 	if( ( nFlags & MK_CONTROL ) && convertPoint( point, m_fDownX, m_fDownY ) )
 	{
 		m_bRotationFlag = TRUE;
@@ -327,12 +330,12 @@ void CChildView::OnLButtonDown(UINT nFlags, CPoint point)
 		m_fLastY = m_pEditNode->getPositionY();
 		m_fLastRotation = m_pEditNode->getRotation();
 	}
-	else if( nFlags & MK_SHIFT )///////// Æ½ÒÆ´óµØÍ¼
+	else if( nFlags & MK_SHIFT )///////// å¹³ç§»å¤§åœ°å›¾
 	{
 		if( m_pSMNode != NULL )
 			m_bMoveSMFlag = TRUE;
 	}
-	else///////////////////////////////// Ñ¡ÖÐÎï¼þ
+	else///////////////////////////////// é€‰ä¸­ç‰©ä»¶
 	{
 		if( m_pSMNode != NULL )
 		{
@@ -356,7 +359,7 @@ const float g_fSelectedWidth = 100.0f;
 const float g_fSelectedHeight = 100.0f;
 void CChildView::OnLButtonUp(UINT nFlags, CPoint point)
 {
-	// TODO: ÔÚ´ËÌí¼ÓÏûÏ¢´¦Àí³ÌÐò´úÂëºÍ/»òµ÷ÓÃÄ¬ÈÏÖµ
+	// TODO: åœ¨æ­¤æ·»åŠ æ¶ˆæ¯å¤„ç†ç¨‹åºä»£ç å’Œ/æˆ–è°ƒç”¨é»˜è®¤å€¼
 	m_bDownFlag = FALSE;
 	m_bMoveSMFlag = FALSE;
 
@@ -373,7 +376,7 @@ void CChildView::OnLButtonUp(UINT nFlags, CPoint point)
 
 void CChildView::OnMouseMove(UINT nFlags, CPoint point)
 {
-	// TODO: ÔÚ´ËÌí¼ÓÏûÏ¢´¦Àí³ÌÐò´úÂëºÍ/»òµ÷ÓÃÄ¬ÈÏÖµ
+	// TODO: åœ¨æ­¤æ·»åŠ æ¶ˆæ¯å¤„ç†ç¨‹åºä»£ç å’Œ/æˆ–è°ƒç”¨é»˜è®¤å€¼
 	if( m_bRotationFlag )
 	{
 		if( nFlags & MK_CONTROL )
@@ -435,7 +438,7 @@ void CChildView::OnMouseMove(UINT nFlags, CPoint point)
 
 BOOL CChildView::PreTranslateMessage(MSG* pMsg)
 {
-	// TODO: ÔÚ´ËÌí¼Ó×¨ÓÃ´úÂëºÍ/»òµ÷ÓÃ»ùÀà
+	// TODO: åœ¨æ­¤æ·»åŠ ä¸“ç”¨ä»£ç å’Œ/æˆ–è°ƒç”¨åŸºç±»
 	if( m_hAccel && ::TranslateAccelerator( m_hWnd, m_hAccel, pMsg ) )
 		return TRUE;
 
@@ -444,35 +447,35 @@ BOOL CChildView::PreTranslateMessage(MSG* pMsg)
 
 void CChildView::OnChildViewUp()
 {
-	// TODO: ÔÚ´ËÌí¼ÓÃüÁî´¦Àí³ÌÐò´úÂë
+	// TODO: åœ¨æ­¤æ·»åŠ å‘½ä»¤å¤„ç†ç¨‹åºä»£ç 
 	if( m_pEditMapBlock != NULL && m_pEditNode != NULL )
 		m_pEditMapBlock->moveObject( m_pEditNode, 0.0f, 1.0f );
 }
 
 void CChildView::OnChildViewDown()
 {
-	// TODO: ÔÚ´ËÌí¼ÓÃüÁî´¦Àí³ÌÐò´úÂë
+	// TODO: åœ¨æ­¤æ·»åŠ å‘½ä»¤å¤„ç†ç¨‹åºä»£ç 
 	if( m_pEditMapBlock != NULL && m_pEditNode != NULL )
 		m_pEditMapBlock->moveObject( m_pEditNode, 0.0f, -1.0f );
 }
 
 void CChildView::OnChildViewLeft()
 {
-	// TODO: ÔÚ´ËÌí¼ÓÃüÁî´¦Àí³ÌÐò´úÂë
+	// TODO: åœ¨æ­¤æ·»åŠ å‘½ä»¤å¤„ç†ç¨‹åºä»£ç 
 	if( m_pEditMapBlock != NULL && m_pEditNode != NULL )
 		m_pEditMapBlock->moveObject( m_pEditNode, -1.0f, 0.0f );
 }
 
 void CChildView::OnChildViewRight()
 {
-	// TODO: ÔÚ´ËÌí¼ÓÃüÁî´¦Àí³ÌÐò´úÂë
+	// TODO: åœ¨æ­¤æ·»åŠ å‘½ä»¤å¤„ç†ç¨‹åºä»£ç 
 	if( m_pEditMapBlock != NULL && m_pEditNode != NULL )
 		m_pEditMapBlock->moveObject( m_pEditNode, 1.0f, 0.0f );
 }
 
 void CChildView::OnChildViewDelete()
 {
-	// TODO: ÔÚ´ËÌí¼ÓÃüÁî´¦Àí³ÌÐò´úÂë
+	// TODO: åœ¨æ­¤æ·»åŠ å‘½ä»¤å¤„ç†ç¨‹åºä»£ç 
 	if( m_pEditNode != NULL )
 		m_pEditMapBlock->removeObject( m_pEditNode );
 }
@@ -584,4 +587,27 @@ BOOL CChildView::convertPointToMB( const CPoint& point, float& ret_x, float& ret
 	ret_y = fWorldY - mb_y;
 
 	return TRUE;
+}
+
+
+void CChildView::OnContextMenu(CWnd* pWnd, CPoint point)
+{
+	convertPointToSM( point, m_fNewBlockX, m_fNewBlockY );
+
+	theApp.GetContextMenuManager()->ShowPopupMenu(IDR_MENU_SEAMLESS_MAP, point.x, point.y, this, TRUE);
+
+	SetFocus();
+}
+
+
+void CChildView::OnSeamlessmapNewblock()
+{
+	// TODO: 
+	CNewMapBlockDlg dlg;
+	if( dlg.DoModal() == IDOK )
+	{
+		std::string strBlockName = dlg.m_strBlockName.GetBuffer();
+		std::string strMaterial = dlg.m_strMaterial.GetBuffer();
+		m_pSMNode->addBlock( strBlockName, m_fNewBlockX, m_fNewBlockY, strMaterial );
+	}
 }

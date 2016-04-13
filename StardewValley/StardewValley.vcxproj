@@ -51,7 +51,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\YYFramework\cocos2d-x-2.1.5\cocos2dx\;..\..\YYFramework\cocos2d-x-2.1.5\cocos2dx\support;..\..\YYFramework\cocos2d-x-2.1.5\cocos2dx\include;..\..\YYFramework\cocos2d-x-2.1.5\cocos2dx\platform;..\..\YYFramework\cocos2d-x-2.1.5\cocos2dx\platform\win32;..\..\YYFramework\cocos2d-x-2.1.5\cocos2dx\platform\third_party\win32;..\..\YYFramework\cocos2d-x-2.1.5\cocos2dx\platform\third_party\win32\pthread;..\..\YYFramework\cocos2d-x-2.1.5\cocos2dx\platform\third_party\win32\OGLES;..\..\YYFramework\cocos2d-x-2.1.5\cocos2dx\kazmath\include;..\..\YYFramework\cocos2d-x-2.1.5\CocosDenshion\include;..\..\YYFramework\cocos2d-x-2.1.5\scripting\lua\cocos2dx_support;..\..\YYFramework\cocos2d-x-2.1.5\scripting\lua\lua;..\..\YYFramework\cocos2d-x-2.1.5\scripting\lua\tolua;..\..\YYFramework\cocos2d-x-2.1.5\external\chipmunk\include\;..\..\YYFramework\src;..\..\protobuf-2.4.1\src;..\..\YYFramework\src\protocol\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\yy-framework\cocos2d-x-2.1.5\cocos2dx\;..\..\yy-framework\cocos2d-x-2.1.5\cocos2dx\support;..\..\yy-framework\cocos2d-x-2.1.5\cocos2dx\include;..\..\yy-framework\cocos2d-x-2.1.5\cocos2dx\platform;..\..\yy-framework\cocos2d-x-2.1.5\cocos2dx\platform\win32;..\..\yy-framework\cocos2d-x-2.1.5\cocos2dx\platform\third_party\win32;..\..\yy-framework\cocos2d-x-2.1.5\cocos2dx\platform\third_party\win32\pthread;..\..\yy-framework\cocos2d-x-2.1.5\cocos2dx\platform\third_party\win32\OGLES;..\..\yy-framework\cocos2d-x-2.1.5\cocos2dx\kazmath\include;..\..\yy-framework\cocos2d-x-2.1.5\CocosDenshion\include;..\..\yy-framework\cocos2d-x-2.1.5\scripting\lua\cocos2dx_support;..\..\yy-framework\cocos2d-x-2.1.5\scripting\lua\lua;..\..\yy-framework\cocos2d-x-2.1.5\scripting\lua\tolua;..\..\yy-framework\cocos2d-x-2.1.5\external\chipmunk\include\;..\..\yy-framework\src;..\..\protobuf-2.4.1\src;..\..\yy-framework\src\protocol\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/wd4819 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -139,6 +139,7 @@
     <ClInclude Include="FileView.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="MapStyleWnd.h" />
+    <ClInclude Include="NewMapBlockDlg.h" />
     <ClInclude Include="OutputWnd.h" />
     <ClInclude Include="PropertiesWnd.h" />
     <ClInclude Include="Resource.h" />
@@ -157,6 +158,7 @@
     <ClCompile Include="FileView.cpp" />
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="MapStyleWnd.cpp" />
+    <ClCompile Include="NewMapBlockDlg.cpp" />
     <ClCompile Include="OutputWnd.cpp" />
     <ClCompile Include="PropertiesWnd.cpp" />
     <ClCompile Include="SelectSurfaceTextureDlg.cpp" />

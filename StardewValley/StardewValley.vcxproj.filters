@@ -147,6 +147,9 @@
     <ClInclude Include="DDEffectDlg.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="NewMapBlockDlg.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="StardewValley.cpp">
@@ -189,6 +192,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="DDEffectDlg.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="NewMapBlockDlg.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

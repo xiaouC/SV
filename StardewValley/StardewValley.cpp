@@ -176,6 +176,8 @@ void CStardewValleyApp::PreLoadState()
 	bNameValid = strName.LoadString(IDS_EXPLORER);
 	ASSERT(bNameValid);
 	GetContextMenuManager()->AddMenu(strName, IDR_POPUP_EXPLORER);
+
+	GetContextMenuManager()->AddMenu(_T("SeamlessMap"), IDR_MENU_SEAMLESS_MAP);
 }
 
 void CStardewValleyApp::LoadCustomState()
