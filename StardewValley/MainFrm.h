@@ -24,6 +24,7 @@ public:
 // ²Ù×÷
 public:
 	void onFrameMove();
+    BOOL newSeamlessMap( const CString& strFileName, const CString& strBlockName, int nBlockRow, int nBlockCol, int nGridWidth, int nGridHeight, const CString& strMaterial );
 	void openSeamlessMap( const CString& strFileName );
 
 // ÖØÐ´

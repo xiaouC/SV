@@ -495,6 +495,11 @@ void CMainFrame::onFrameMove()
 	}
 }
 
+BOOL CMainFrame::newSeamlessMap( const CString& strFileName, const CString& strBlockName, int nBlockRow, int nBlockCol, int nGridWidth, int nGridHeight, const CString& strMaterial )
+{
+    return m_wndView.newSeamlessMap( strFileName, strBlockName, nBlockRow, nBlockCol, nGridWidth, nGridHeight, strMaterial );
+}
+
 void CMainFrame::openSeamlessMap( const CString& strFileName )
 {
 	m_wndView.openSeamlessMap( strFileName );

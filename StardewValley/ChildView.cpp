@@ -289,17 +289,31 @@ void CChildView::OnOpenSm()
     }
 }
 
+BOOL CChildView::newSeamlessMap( const CString& strFileName, const CString& strBlockName, int nBlockRow, int nBlockCol, int nGridWidth, int nGridHeight, const CString& strMaterial )
+{
+	TLSeamlessMap* pNewSMNode = TLSeamlessMap::newSeamlessMap( strFileName.GetBuffer(), strBlockName.GetBuffer(), nBlockRow, nBlockCol, nGridWidth, nGridHeight, strMaterial.GetBuffer() );
+    if( pNewSMNode == NULL )
+        return FALSE;
+
+    if( m_pSMNode != NULL )
+        m_pSMNode->removeFromParentAndCleanup( true );
+
+    m_pMainScaleNode->addChild( pNewSMNode );
+    m_pSMNode = pNewSMNode;
+
+    return TRUE;
+}
+
 void CChildView::openSeamlessMap( CString strFileName )
 {
 	std::string strTempFileName = strFileName.GetBuffer();
 	TLSeamlessMap* pNewSMNode = TLSeamlessMap::create( strTempFileName, 0.0f, 0.0f );
 	if( pNewSMNode != NULL )
 	{
-		m_pMainScaleNode->addChild( pNewSMNode );
-
 		if( m_pSMNode != NULL )
 			m_pSMNode->removeFromParentAndCleanup( true );
 
+		m_pMainScaleNode->addChild( pNewSMNode );
 		m_pSMNode = pNewSMNode;
 	}
 }

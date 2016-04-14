@@ -81,12 +81,8 @@ void CCreateSeamlessMapDlg::OnBnClickedOk()
 
 	CString strTemp;
 	strTemp.Format( "./map/%s", m_strFileName );
-	if( TLSeamlessMap::newSeamlessMap( strTemp.GetBuffer(), m_strBlockName.GetBuffer(), m_nBlockRow, m_nBlockCol, m_nGridWidth, m_nGridHeight, m_strMaterial.GetBuffer() ) )
+	if( ((CMainFrame*)AfxGetMainWnd())->newSeamlessMap( strTemp, m_strBlockName, m_nBlockRow, m_nBlockCol, m_nGridWidth, m_nGridHeight, m_strMaterial ) )
 	{
-		strTemp.Append( ".sm" );
-
-		((CMainFrame*)AfxGetMainWnd())->openSeamlessMap( strTemp );
-
 		CDialogEx::OnOK();
 	}
 	else
