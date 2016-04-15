@@ -13,6 +13,7 @@
 #include "Map/TLMapBlock.h"
 #include "Map/TLSeamlessMap.h"
 #include "NewMapBlockDlg.h"
+#include "platform/SDKCallback.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -44,22 +45,9 @@ DROPEFFECT CMyDropTarget::OnDropEx( CWnd* pWnd, COleDataObject* pDO, DROPEFFECT 
 CChildView::CChildView()
 {
 	m_pAppDelegate = NULL;
-	m_fMainNodeScale = 1.0f;
-	m_pSMNode = NULL;
-	m_pEditMapBlock = NULL;
-	m_pEditNode = NULL;
 
-	m_bDownFlag = FALSE;
-	m_bMoveSMFlag = FALSE;
-	m_kLastPoint.x = 0;
-	m_kLastPoint.y = 0;
-
-	m_bRotationFlag = FALSE;
-	m_fLastX = 0.0f;
-	m_fLastY = 0.0f;
-	m_fLastRotation = 0.0f;
-	m_fDownX = 0.0f;
-	m_fDownY = 0.0f;
+	m_kNewBlockPoint.x = 0;
+	m_kNewBlockPoint.y = 0;
 }
 
 CChildView::~CChildView()
@@ -162,13 +150,6 @@ void CChildView::OnDestroy()
 
 BOOL CChildView::addSpriteByDrop( COleDataObject* pDataObject, CPoint pt, BOOL bTestOnly )
 {
-	if( m_pSMNode == NULL )
-	{
-		//AfxMessageBox( _T("请先打开地图！"), MB_OK );
-
-		return FALSE;
-	}
-
 	if( pDataObject->IsDataAvailable( CF_TEXT ) )
 	{
 		HGLOBAL hg = pDataObject->GetGlobalData( CF_TEXT );

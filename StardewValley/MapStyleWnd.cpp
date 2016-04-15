@@ -291,7 +291,7 @@ void CMapDetail::OnPaint()
 	// 不为绘图消息调用 CStatic::OnPaint()
 
 	CRect rect;
-	GetWindowRect( &rect );
+	GetClientRect( &rect );
 
 	dc.FillRect( &rect, &m_bgBrush );
 
