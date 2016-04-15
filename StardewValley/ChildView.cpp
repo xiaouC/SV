@@ -40,36 +40,11 @@ DROPEFFECT CMyDropTarget::OnDropEx( CWnd* pWnd, COleDataObject* pDO, DROPEFFECT 
 	return DROPEFFECT_NONE;
 }
 
-///////////////////////////////////////////////////////////////////////////
-float vector_dot( ccVertex3F v1, ccVertex3F v2 )
-{
-	return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
-}
-
-ccVertex3F vector_cross( ccVertex3F v1, ccVertex3F v2 )
-{
-	ccVertex3F ret_v;
-
-	ret_v.x = v1.y * v2.z - v2.y * v1.z;
-	ret_v.y = v1.z * v2.x - v2.z * v1.x;
-	ret_v.z = v1.x * v2.y - v2.x * v1.y;
-
-	return ret_v;
-}
-
-float vector_distance( ccVertex3F v1, ccVertex3F v2 )
-{
-	return sqrt( ( v1.x * v1.x + v1.y * v1.y + v1.z * v1.z ) * ( v2.x * v2.x + v2.y * v2.y + v2.z * v2.z ) );
-}
-
 // CChildView
 CChildView::CChildView()
 {
 	m_pAppDelegate = NULL;
-	m_pGLView = NULL;
 	m_fMainNodeScale = 1.0f;
-	m_pMainNode = NULL;
-	m_pMainScaleNode = NULL;
 	m_pSMNode = NULL;
 	m_pEditMapBlock = NULL;
 	m_pEditNode = NULL;
@@ -138,15 +113,9 @@ void CChildView::OnSize(UINT nType, int cx, int cy)
 	CWnd::OnSize(nType, cx, cy);
 
 	// TODO: 在此处添加消息处理程序代码
-	if( m_pGLView != NULL )
-	{
-		m_pGLView->setFrameSize( cx, cy );
-		m_pGLView->setDesignResolutionSize( cx, cy, kResolutionShowAll );
-		//CCDirector::sharedDirector()->updateWinSizeInPoints();
-		//CCDirector::sharedDirector()->setProjection( kCCDirectorProjection3D );
-
-		m_pMainNode->setPosition( cx * 0.5f, cy * 0.5f );
-	}
+    CString strArgs;
+    strArgs.Format( "%d|%d", cx, cy );
+    platform_callback( "CHILD_VIEW_ON_SIZE", strArgs.GetBuffer() );
 }
 
 int CChildView::OnCreate(LPCREATESTRUCT lpCreateStruct)
@@ -163,30 +132,14 @@ int CChildView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_pAppDelegate = new AppDelegate;
 
 	CCDirector* pDirector = CCDirector::sharedDirector();
-    m_pGLView = CCEGLView::sharedOpenGLView( m_hWnd );
+    CCEGLView* pGLView = CCEGLView::sharedOpenGLView( m_hWnd );
 
-    pDirector->setOpenGLView( m_pGLView );
+    pDirector->setOpenGLView( pGLView );
 
-	if( StartLua( CCLuaEngine::defaultEngine(), "main" ) != 0 )
+	if( StartLua( CCLuaEngine::defaultEngine(), "Editor.main" ) != 0 )
 	{
-        CCLog( "error start lua main.lua" );
+        CCLog( "error start lua editor main.lua" );
     }
-
-	AssetsManager::sharedAssetsManager()->addSearchPath( "" );
-    AssetsManager::sharedAssetsManager()->addSearchPath( "images/" );
-    AssetsManager::sharedAssetsManager()->addSearchPath( "mc/" );
-
-	MCLoader::sharedMCLoader()->loadIndexFile( "mc/anim.index", "mc/frames.index" );
-
-	m_pGLView->setDesignResolutionSize( 1024, 768, kResolutionShowAll );
-	pDirector->setDisplayStats( true );
-
-	m_pMainNode = TLRunningScene::create();
-	pDirector->runWithScene( m_pMainNode );
-
-	m_pMainScaleNode = cocos2d::CCNode::create();
-	m_pMainScaleNode->setScale( m_fMainNodeScale );
-	m_pMainNode->addChild( m_pMainScaleNode );
 
 	return 0;
 }
@@ -204,9 +157,6 @@ void CChildView::OnDestroy()
 		//Sdelete m_pAppDelegate;
 		delete m_pAppDelegate;
 		m_pAppDelegate = NULL;
-		m_pGLView = NULL;
-		m_pMainNode = NULL;
-		m_pMainScaleNode = NULL;
 	}
 }
 
@@ -231,35 +181,11 @@ BOOL CChildView::addSpriteByDrop( COleDataObject* pDataObject, CPoint pt, BOOL b
 		{
 			if( !bTestOnly )
 			{
-				CRect rect;
-				GetWindowRect( &rect );
-
-				float x = ( pt.x - rect.Width() * 0.5f ) / m_fMainNodeScale;
-				float y = ( rect.Height() * 0.5f - pt.y ) / m_fMainNodeScale;
-
-				float sm_x = 0.0f;
-				float sm_y = 0.0f;
-				m_pSMNode->getPosition( &sm_x, &sm_y );
-
-				float fWorldX = x - sm_x;
-				float fWorldY = y - sm_y;
-				TLMapBlock* pMapBlock = m_pSMNode->getMapBlock( fWorldX, fWorldY );
-				if( pMapBlock == NULL )
-					return FALSE;
-
 				strData.erase( 0, 6 );
 
-				float mb_x = 0.0f;
-				float mb_y = 0.0f;
-				pMapBlock->getPosition( &mb_x, &mb_y );
-				float fLocalX = fWorldX - mb_x;
-				float fLocalY = fWorldY - mb_y;
-				CCNode* pSprite = pMapBlock->addSprite( strData, fLocalX, fLocalY );
-				if( pSprite == NULL )
-					return FALSE;
-
-				m_pEditMapBlock = pMapBlock;
-				m_pEditNode = pSprite;
+                CString strArgs;
+                strArgs.Format( "%d|%d|%s", pt.x, pt.y, strData.c_str() );
+                platform_callback( "ADD_SPRITE_DROP", strArgs.GetBuffer() );
 			}
 
 			return TRUE;
@@ -291,38 +217,22 @@ void CChildView::OnOpenSm()
 
 BOOL CChildView::newSeamlessMap( const CString& strFileName, const CString& strBlockName, int nBlockRow, int nBlockCol, int nGridWidth, int nGridHeight, const CString& strMaterial )
 {
-	TLSeamlessMap* pNewSMNode = TLSeamlessMap::newSeamlessMap( strFileName.GetBuffer(), strBlockName.GetBuffer(), nBlockRow, nBlockCol, nGridWidth, nGridHeight, strMaterial.GetBuffer() );
-    if( pNewSMNode == NULL )
-        return FALSE;
-
-    if( m_pSMNode != NULL )
-        m_pSMNode->removeFromParentAndCleanup( true );
-
-    m_pMainScaleNode->addChild( pNewSMNode );
-    m_pSMNode = pNewSMNode;
+    CString strArgs;
+    strArgs.Format( "%s|%s|%d|%d|%d|%d|%s", strFileName, strBlockName, nBlockRow, nBlockCol, nGridWidth, nGridHeight, strMaterial );
+    platform_callback( "NEW_SEAMLESS_MAP", strArgs.GetBuffer() );
 
     return TRUE;
 }
 
 void CChildView::openSeamlessMap( CString strFileName )
 {
-	std::string strTempFileName = strFileName.GetBuffer();
-	TLSeamlessMap* pNewSMNode = TLSeamlessMap::create( strTempFileName, 0.0f, 0.0f );
-	if( pNewSMNode != NULL )
-	{
-		if( m_pSMNode != NULL )
-			m_pSMNode->removeFromParentAndCleanup( true );
-
-		m_pMainScaleNode->addChild( pNewSMNode );
-		m_pSMNode = pNewSMNode;
-	}
+    platform_callback( "OPEN_SEAMLESS_MAP", strFileName.GetBuffer() );
 }
 
 void CChildView::OnSaveSm()
 {
 	// TODO: 在此添加命令处理程序代码
-	if( m_pSMNode != NULL )
-		m_pSMNode->save();
+    platform_callback( "SAVE_SEAMLESS_MAP", "" );
 
 	AfxMessageBox( _T("保存成功!"), MB_OK );
 }
@@ -332,58 +242,19 @@ void CChildView::OnLButtonDown(UINT nFlags, CPoint point)
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
 	SetFocus();
 
-	m_bDownFlag = TRUE;
-	m_kLastPoint = point;
-
-	// 旋转
-	if( ( nFlags & MK_CONTROL ) && convertPoint( point, m_fDownX, m_fDownY ) )
-	{
-		m_bRotationFlag = TRUE;
-
-		m_fLastX = m_pEditNode->getPositionX();
-		m_fLastY = m_pEditNode->getPositionY();
-		m_fLastRotation = m_pEditNode->getRotation();
-	}
-	else if( nFlags & MK_SHIFT )///////// 平移大地图
-	{
-		if( m_pSMNode != NULL )
-			m_bMoveSMFlag = TRUE;
-	}
-	else///////////////////////////////// 选中物件
-	{
-		if( m_pSMNode != NULL )
-		{
-			float x, y;
-			if( convertPointToSM( point, x, y ) )
-			{
-				m_pEditMapBlock = m_pSMNode->getMapBlock( x, y );
-				if( m_pEditMapBlock != NULL )
-				{
-					convertPointToMB( point, x, y );
-					m_pEditNode = m_pEditMapBlock->hitSprite( x, y );
-				}
-			}
-		}
-	}
+    CString strArgs;
+    strArgs.Format( "%d|%d|%s|%s", point.x, point.y, ( nFlags & MK_CONTROL ) ? "true" : "false", ( nFlags & MK_SHIFT ) ? "true" : "false" );
+    platform_callback( "CHILD_VIEW_LBUTTON_DOWN", strArgs.GetBuffer() );
 
 	CWnd::OnLButtonDown(nFlags, point);
 }
 
-const float g_fSelectedWidth = 100.0f;
-const float g_fSelectedHeight = 100.0f;
 void CChildView::OnLButtonUp(UINT nFlags, CPoint point)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
-	m_bDownFlag = FALSE;
-	m_bMoveSMFlag = FALSE;
-
-	if( m_bRotationFlag )
-	{
-		if( m_pEditMapBlock != NULL && m_pEditNode != NULL )
-			m_pEditMapBlock->rotateObject( m_pEditNode, m_pEditNode->getRotation() );
-
-		m_bRotationFlag = FALSE;
-	}
+    CString strArgs;
+    strArgs.Format( "%d|%d|%s|%s", point.x, point.y, ( nFlags & MK_CONTROL ) ? "true" : "false", ( nFlags & MK_SHIFT ) ? "true" : "false" );
+    platform_callback( "CHILD_VIEW_LBUTTON_UP", strArgs.GetBuffer() );
 
 	CWnd::OnLButtonUp(nFlags, point);
 }
@@ -391,61 +262,9 @@ void CChildView::OnLButtonUp(UINT nFlags, CPoint point)
 void CChildView::OnMouseMove(UINT nFlags, CPoint point)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
-	if( m_bRotationFlag )
-	{
-		if( nFlags & MK_CONTROL )
-		{
-			float fMoveX, fMoveY;
-			if( convertPoint( point, fMoveX, fMoveY ) )
-			{
-				ccVertex3F v1;
-				v1.x = m_fDownX - m_fLastX;
-				v1.y = m_fDownY - m_fLastY;
-				v1.z = 0.0f;
-
-				ccVertex3F v2;
-				v2.x = fMoveX - m_fLastX;
-				v2.y = fMoveY - m_fLastY;
-				v2.z = 0.0f;
-
-				float fDot = vector_dot( v1, v2 );
-				ccVertex3F vCross = vector_cross( v1, v2 );
-				float fDis = vector_distance( v1, v2 );
-
-				float angle = acos( fDot / fDis ) * 180.0f / M_PI;
-
-				if( vCross.z > 0 )
-					m_pEditNode->setRotation( m_fLastRotation - angle );
-				else
-					m_pEditNode->setRotation( m_fLastRotation + angle );
-		}
-		}
-	}
-	else if( m_bMoveSMFlag )
-	{
-		if( ( nFlags & MK_SHIFT ) && m_pSMNode != NULL )
-		{
-			float fOffsetX = ( point.x - m_kLastPoint.x ) / m_fMainNodeScale;
-			float fOffsetY = ( point.y - m_kLastPoint.y ) / m_fMainNodeScale;
-
-			m_kLastPoint = point;
-
-			m_pSMNode->setPositionX( m_pSMNode->getPositionX() + fOffsetX );
-			m_pSMNode->setPositionY( m_pSMNode->getPositionY() - fOffsetY );
-		}
-	}
-	else
-	{
-		if( m_bDownFlag && m_pEditMapBlock != NULL && m_pEditNode != NULL )
-		{
-			float fOffsetX = point.x - m_kLastPoint.x;
-			float fOffsetY = point.y - m_kLastPoint.y;
-
-			m_kLastPoint = point;
-
-			m_pEditMapBlock->moveObject( m_pEditNode, fOffsetX, -fOffsetY );
-		}
-	}
+    CString strArgs;
+    strArgs.Format( "%d|%d|%s|%s", point.x, point.y, ( nFlags & MK_CONTROL ) ? "true" : "false", ( nFlags & MK_SHIFT ) ? "true" : "false" );
+    platform_callback( "CHILD_VIEW_MOUSE_MOVE", strArgs.GetBuffer() );
 
 	CWnd::OnMouseMove(nFlags, point);
 }
@@ -462,36 +281,31 @@ BOOL CChildView::PreTranslateMessage(MSG* pMsg)
 void CChildView::OnChildViewUp()
 {
 	// TODO: 在此添加命令处理程序代码
-	if( m_pEditMapBlock != NULL && m_pEditNode != NULL )
-		m_pEditMapBlock->moveObject( m_pEditNode, 0.0f, 1.0f );
+    platform_callback( "CHILD_VIEW_UP", "" );
 }
 
 void CChildView::OnChildViewDown()
 {
 	// TODO: 在此添加命令处理程序代码
-	if( m_pEditMapBlock != NULL && m_pEditNode != NULL )
-		m_pEditMapBlock->moveObject( m_pEditNode, 0.0f, -1.0f );
+    platform_callback( "CHILD_VIEW_DOWN", "" );
 }
 
 void CChildView::OnChildViewLeft()
 {
 	// TODO: 在此添加命令处理程序代码
-	if( m_pEditMapBlock != NULL && m_pEditNode != NULL )
-		m_pEditMapBlock->moveObject( m_pEditNode, -1.0f, 0.0f );
+    platform_callback( "CHILD_VIEW_LEFT", "" );
 }
 
 void CChildView::OnChildViewRight()
 {
 	// TODO: 在此添加命令处理程序代码
-	if( m_pEditMapBlock != NULL && m_pEditNode != NULL )
-		m_pEditMapBlock->moveObject( m_pEditNode, 1.0f, 0.0f );
+    platform_callback( "CHILD_VIEW_RIGHT", "" );
 }
 
 void CChildView::OnChildViewDelete()
 {
 	// TODO: 在此添加命令处理程序代码
-	if( m_pEditNode != NULL )
-		m_pEditMapBlock->removeObject( m_pEditNode );
+    platform_callback( "CHILD_VIEW_DELETE", "" );
 }
 
 void CChildView::OnMouseHWheel(UINT nFlags, short zDelta, CPoint pt)
@@ -500,113 +314,29 @@ void CChildView::OnMouseHWheel(UINT nFlags, short zDelta, CPoint pt)
 	{
 		if( nFlags & MK_CONTROL )
 		{
-			m_pEditMapBlock->scaleObject( m_pEditNode, 1.1f );
+            platform_callback( "EDIT_NODE_SCALE", "1.1" );
 		}
 		else
 		{
-			m_fMainNodeScale *= 1.1f;
-			m_pMainScaleNode->setScale( m_fMainNodeScale );
+            platform_callback( "MAIN_NODE_SCALE", "1.1" );
 		}
 	}
 	else
 	{
 		if( nFlags & MK_CONTROL )
 		{
-			m_pEditMapBlock->scaleObject( m_pEditNode, 0.9f );
+            platform_callback( "EDIT_NODE_SCALE", "0.9" );
 		}
 		else
 		{
-			m_fMainNodeScale *= 0.9f;
-			m_pMainScaleNode->setScale( m_fMainNodeScale );
+            platform_callback( "MAIN_NODE_SCALE", "0.9" );
 		}
 	}
 }
 
-BOOL CChildView::convertPoint( const CPoint& point, float& ret_x, float& ret_y )
-{
-	if( m_pEditMapBlock == NULL || m_pEditNode == NULL )
-		return FALSE;
-
-	CRect rect;
-	GetWindowRect( &rect );
-
-	float x = ( point.x - rect.Width() * 0.5f ) / m_fMainNodeScale;
-	float y = ( rect.Height() * 0.5f - point.y ) / m_fMainNodeScale;
-
-	float sm_x = 0.0f;
-	float sm_y = 0.0f;
-	m_pSMNode->getPosition( &sm_x, &sm_y );
-
-	float fWorldX = x - sm_x;
-	float fWorldY = y - sm_y;
-
-	float mb_x = 0.0f;
-	float mb_y = 0.0f;
-	m_pEditMapBlock->getPosition( &mb_x, &mb_y );
-
-	ret_x = fWorldX - mb_x;
-	ret_y = fWorldY - mb_y;
-
-	return TRUE;
-}
-
-BOOL CChildView::convertPointToSM( const CPoint& point, float& ret_x, float& ret_y )
-{
-	if( m_pSMNode == NULL )
-		return FALSE;
-
-	CRect rect;
-	GetWindowRect( &rect );
-
-	float x = ( point.x - rect.Width() * 0.5f ) / m_fMainNodeScale;
-	float y = ( rect.Height() * 0.5f - point.y ) / m_fMainNodeScale;
-
-	float sm_x = 0.0f;
-	float sm_y = 0.0f;
-	m_pSMNode->getPosition( &sm_x, &sm_y );
-
-	ret_x = x - sm_x;
-	ret_y = y - sm_y;
-
-	return TRUE;
-}
-
-BOOL CChildView::convertPointToMB( const CPoint& point, float& ret_x, float& ret_y )
-{
-	if( m_pSMNode == NULL )
-		return FALSE;
-
-	CRect rect;
-	GetWindowRect( &rect );
-
-	float x = ( point.x - rect.Width() * 0.5f ) / m_fMainNodeScale;
-	float y = ( rect.Height() * 0.5f - point.y ) / m_fMainNodeScale;
-
-	float sm_x = 0.0f;
-	float sm_y = 0.0f;
-	m_pSMNode->getPosition( &sm_x, &sm_y );
-
-	float fWorldX = x - sm_x;
-	float fWorldY = y - sm_y;
-
-	TLMapBlock* pMapBlock = m_pSMNode->getMapBlock( fWorldX, fWorldY );
-	if( pMapBlock == NULL )
-		return FALSE;
-
-	float mb_x = 0.0f;
-	float mb_y = 0.0f;
-	pMapBlock->getPosition( &mb_x, &mb_y );
-
-	ret_x = fWorldX - mb_x;
-	ret_y = fWorldY - mb_y;
-
-	return TRUE;
-}
-
-
 void CChildView::OnContextMenu(CWnd* pWnd, CPoint point)
 {
-	convertPointToSM( point, m_fNewBlockX, m_fNewBlockY );
+    m_kNewBlockPoint = point;
 
 	theApp.GetContextMenuManager()->ShowPopupMenu(IDR_MENU_SEAMLESS_MAP, point.x, point.y, this, TRUE);
 
@@ -620,8 +350,8 @@ void CChildView::OnSeamlessmapNewblock()
 	CNewMapBlockDlg dlg;
 	if( dlg.DoModal() == IDOK )
 	{
-		std::string strBlockName = dlg.m_strBlockName.GetBuffer();
-		std::string strMaterial = dlg.m_strMaterial.GetBuffer();
-		m_pSMNode->addBlock( strBlockName, m_fNewBlockX, m_fNewBlockY, strMaterial );
+        CString strArgs;
+        strArgs.Format( "%s|%d|%d|%s", dlg.m_strBlockName, m_kNewBlockPoint.x, m_kNewBlockPoint.y, dlg.m_strMaterial );
+        platform_callback( "NEW_MAP_BLOCK", strArgs.GetBuffer() );
 	}
 }
