@@ -1,0 +1,7 @@
+$#include "tolua_fix.h"
+$#include "CCLuaValue.h"
+$#include "TLEditInterface.h"
+
+void resetPropList();
+void addPropGroup( const std::string& strGroupName );
+void addPropItem( const std::string& strItemInfo );
