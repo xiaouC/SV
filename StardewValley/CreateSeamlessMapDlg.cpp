@@ -80,7 +80,7 @@ void CCreateSeamlessMapDlg::OnBnClickedOk()
 	}
 
 	CString strTemp;
-	strTemp.Format( "./map/%s", m_strFileName );
+	strTemp.Format( "map/%s", m_strFileName );
 	if( ((CMainFrame*)AfxGetMainWnd())->newSeamlessMap( strTemp, m_strBlockName, m_nBlockRow, m_nBlockCol, m_nGridWidth, m_nGridHeight, m_strMaterial ) )
 	{
 		CDialogEx::OnOK();

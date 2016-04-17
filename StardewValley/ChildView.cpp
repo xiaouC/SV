@@ -222,9 +222,11 @@ void CChildView::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
 	SetFocus();
+	
+	BOOL bAltFlag = ( GetKeyState( VK_LMENU ) < 0 ? TRUE : FALSE );
 
     CString strArgs;
-    strArgs.Format( "%d|%d|%s|%s", point.x, point.y, ( nFlags & MK_CONTROL ) ? "true" : "false", ( nFlags & MK_SHIFT ) ? "true" : "false" );
+    strArgs.Format( "%d|%d|%s|%s|%s", point.x, point.y, ( nFlags & MK_CONTROL ) ? "true" : "false", ( nFlags & MK_SHIFT ) ? "true" : "false", bAltFlag ? "true" : "false" );
     platform_callback( "CHILD_VIEW_LBUTTON_DOWN", strArgs.GetBuffer() );
 
 	CWnd::OnLButtonDown(nFlags, point);
@@ -233,8 +235,10 @@ void CChildView::OnLButtonDown(UINT nFlags, CPoint point)
 void CChildView::OnLButtonUp(UINT nFlags, CPoint point)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
+	BOOL bAltFlag = ( GetKeyState( VK_LMENU ) < 0 ? TRUE : FALSE );
+
     CString strArgs;
-    strArgs.Format( "%d|%d|%s|%s", point.x, point.y, ( nFlags & MK_CONTROL ) ? "true" : "false", ( nFlags & MK_SHIFT ) ? "true" : "false" );
+    strArgs.Format( "%d|%d|%s|%s|%s", point.x, point.y, ( nFlags & MK_CONTROL ) ? "true" : "false", ( nFlags & MK_SHIFT ) ? "true" : "false", bAltFlag ? "true" : "false" );
     platform_callback( "CHILD_VIEW_LBUTTON_UP", strArgs.GetBuffer() );
 
 	CWnd::OnLButtonUp(nFlags, point);
@@ -243,8 +247,10 @@ void CChildView::OnLButtonUp(UINT nFlags, CPoint point)
 void CChildView::OnMouseMove(UINT nFlags, CPoint point)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
+	BOOL bAltFlag = ( GetKeyState( VK_LMENU ) < 0 ? TRUE : FALSE );
+
     CString strArgs;
-    strArgs.Format( "%d|%d|%s|%s", point.x, point.y, ( nFlags & MK_CONTROL ) ? "true" : "false", ( nFlags & MK_SHIFT ) ? "true" : "false" );
+    strArgs.Format( "%d|%d|%s|%s|%s", point.x, point.y, ( nFlags & MK_CONTROL ) ? "true" : "false", ( nFlags & MK_SHIFT ) ? "true" : "false", bAltFlag ? "true" : "false" );
     platform_callback( "CHILD_VIEW_MOUSE_MOVE", strArgs.GetBuffer() );
 
 	CWnd::OnMouseMove(nFlags, point);
